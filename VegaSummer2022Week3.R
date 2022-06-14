@@ -2,6 +2,8 @@
 # Today we will be exploring summary statistics of quantitative data
 # using code and other material from
 #   https://moderndive.com/3-wrangling.html
+#   https://r4ds.had.co.nz/iteration.html
+#   https://intro2r.com/loops.html
 #
 #  Background material for this section is from
 #   https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data
@@ -9,8 +11,8 @@
 #   https://www.dataanalytics.org.uk/axis-labels-in-r-plots-using-expression/
 #
 # We will:
-# - learn more about pipes and object manipulation in R
-# - learn how to generate summary statistics for data in R
+# - learn about iteration and generating functions in R
+# - learn more about how to generate summary statistics for data in R
 # - review the concept of random sampling
 # - review summary statistics of data
 # - continue learning about the concept of (log)normality as applied to biological data
@@ -89,6 +91,8 @@ ggplot(data = flights, mapping = aes(x = gain)) +
   geom_vline(xintercept=quantile(flights$gain, 0.25, na.rm=TRUE), linetype="dashed", lwd=1.5, color="blue")
 
 # As a box or violin plot, separated by some factor of interest (here, by carrier)
+# What does the function complete_cases() do? What will this line of code do?
+?complete.cases
 flights2<-flights[complete.cases(flights),]
 flights2 %>%
   ggplot(aes(x=factor(carrier), y=gain))+
@@ -167,6 +171,90 @@ PathogenStats$cv<-PathogenStats$mean/PathogenStats$std_dev
 PathogenStats$log_cv<-PathogenStats$log_mean/PathogenStats$log_std_dev
 PathogenStats  
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#              LOOPING AND ITERATION IN R: FOR LOOPS
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# RULE OF THUMB: Never copy/paste code more than twice.
+# Instead, execute the SAME code repeatedly via iteration or functions.
+#
+# Loops execute a block of code over and over again until the close condition is met.
+# A for() loop takes a sequence and runs from start to end in units of 1 unless told otherwise
+
+for (i in 1:5) {
+  print(i)
+}
+
+# It is technically possible to use increments other than 1 by creating a sequence for the loop to follow:
+seq(0,10,2)
+for (i in seq(0, 10, 2)) print(i)
+
+# For loops can call other functions in R so those functions can be used repeatedly.
+# Let's say we have a tibble:
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+
+# and we want the medians for each column (but don't want to use summarize for some reason)
+# We could go one by one:
+median(df$a)
+median(df$b)
+median(df$c)
+median(df$d)
+
+# But this breaks our rule about copy-paste
+# so instead we will use a for() loop.
+# Each for() loop must have three components:
+output <- vector("double", ncol(df))  # 1. output
+for (i in seq_along(df)) {            # 2. sequence
+  output[[i]] <- median(df[[i]])      # 3. body
+}
+output
+
+# An older way of doing this in base R uses length() to set the number of iterations:
+output <- vector("double", ncol(df))  # 1. output
+for (i in 1:length(df)) {            # 2. sequence
+  output[[i]] <- median(df[[i]])      # 3. body
+}
+output
+
+# seq_along(x) does the same thing as 1:length(x), but safely in case of a zero-length argument
+y <- vector("double", 0)
+seq_along(y)
+1:length(y)
+
+# It’s common to see for loops that don’t preallocate the output and instead increase the length of a vector at each step.
+# Let's see how the performance compares
+# No pre-allocation:
+start_time<-Sys.time()
+output <- vector("integer", 0)
+for (i in seq_along(x)) {
+  output <- c(output, lengths(x[[i]]))
+}
+output
+end_time<-Sys.time()
+start_time-end_time
+
+# With pre-allocation:
+start_time<-Sys.time()
+output <- vector("double", ncol(df))  # 1. output
+for (i in 1:length(df)) {            # 2. sequence
+  output[[i]] <- median(df[[i]])      # 3. body
+}
+output
+end_time<-Sys.time()
+start_time-end_time
+
+# In general, it will be much less efficient to update an object in each iteration.
+
+# HOMEWORK: Pick one of the loops in section 21.2.1 of R for Data Science.
+# For next week, write a for loop to perform that task.
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Now we can start making comparisons with the normal distribution
 # S. aureus day 1 has 31 observations, let's match that number of data points
