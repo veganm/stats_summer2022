@@ -4,11 +4,12 @@
 #   https://moderndive.com/3-wrangling.html
 #   https://r4ds.had.co.nz/iteration.html
 #   https://intro2r.com/loops.html
+#   https://intro2r.com/prog_r.html
+#   https://ggplot2-book.org/facet.html
+#   https://www.dataanalytics.org.uk/axis-labels-in-r-plots-using-expression/
 #
 #  Background material for this section is from
 #   https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data
-#   https://ggplot2-book.org/facet.html
-#   https://www.dataanalytics.org.uk/axis-labels-in-r-plots-using-expression/
 #
 # We will:
 # - learn about iteration and generating functions in R
@@ -17,7 +18,6 @@
 # - review summary statistics of data
 # - continue learning about the concept of (log)normality as applied to biological data
 # - observe the central limit theorem in action
-
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # First, as usual, we will load the libraries we need
@@ -255,7 +255,8 @@ start_time-end_time
 # For next week, write a for loop to perform that task.
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#               Back to the data analysis.
 # Now we can start making comparisons with the normal distribution
 # S. aureus day 1 has 31 observations, let's match that number of data points
 ?rnorm
@@ -345,35 +346,98 @@ ad.test(data2$x)
 #~    Biological averaging, skewed data, and the Central Limit Theorem
 # Last time, we said that the average of data from a normal will be normal
 # Let's check!
+# But first, we need to talk about...
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#                  FUNCTIONS IN R
+#
+# Functions contain code that we want to use repeatedly,
+# but where we want to change what happens in different runs.
+# Let's see how this happens.
+
+# If you enter the name of a function without the (),
+# you can usually see the source code for the function.
+# Let's do that now so we can see what a function contains.
+theme_classic
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~              WRITING A FUNCTION
-# here, the function sim_means_4dist() contains code we want to reuse
-# This code is provided in script sim_means_4dist.R
-# Go run it now
-# What will the code  do?
+# A function in R has the form:
+# nameOfFunction <- function(argument1, argument2, ...) {expression}
+# The function starts by collecting arguments (in parentheses, some of which have default values)
+# which will be passed to the code in curly brackets {expression}
+f_add_1<-function(x) {x+1}
+
+# Look at your environment - a new category emerges!
+# Let's try it
+f_add_1(5)
+
+# (the brackets can be omitted if your code is only one line)
+f_add_1<-function(x) x+1
+f_add_1(5)
+
+# What if we provide a default value?
+f_add_1<-function(x=1) x+1
+f_add_1(5)
+f_add_1()
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~              A MORE COMPLICATED FUNCTION
+# Here, the function sim_means_4dist() contains code we want to reuse
+# This code is provided in script sim_means_4dist.R
+# Go run the script now.
+# What will the code do?
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~                OK, back to the story.
+#~~~~              Populations of sample means:
+#~    Biological averaging, skewed data, and the Central Limit Theorem
+# Last time, we said that the average of data from a normal will be normal
+# Let's check!
 
 # First let's look at these distributions
 # We define a shared mean for all data
 shared_mean<-1 # our data will have the same true mean
 
-# For the normal, start by creating a sequence of 1000 x values based on population mean and standard deviation 
-pNorm<-ggplot(data.frame(x = c(-4, 4)*shared_mean+shared_mean), aes(x = x)) +
+# For the normal, start by creating a sequence of values based on population mean and standard deviation
+# First we will create the x-axis
+c(-4, 4)
+c(-4, 4)*shared_mean+shared_mean
+
+# then generate & draw simulated data from a statistical distribution using 
+?stat_function()
+
+pNorm<-
+  ggplot(data.frame(x = c(-4, 4)*shared_mean+shared_mean), aes(x = x)) +
   stat_function(fun = dnorm, args=list(mean=shared_mean, sd=shared_mean))+
   theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16)) + 
   labs(title="Normal")
-pLNorm<-ggplot(data.frame(x = c(0, 4)*shared_mean), aes(x = x)) +
+pNorm
+
+# We can do the same for other distributions, but note that the x-axes are different
+pLNorm<-
+  ggplot(data.frame(x = c(0, 4)*shared_mean), aes(x = x)) +
   stat_function(fun = dlnorm, args=list(mean=(log(shared_mean)-(shared_mean^2)/2), sd=log(shared_mean)+shared_mean))+
   theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16)) + 
   labs(title="Lognormal")
-pPoiss<-ggplot(data.frame(x = c(0, 4)*shared_mean), aes(x = x)) +
+pPoiss<-
+  ggplot(data.frame(x = c(0, 4)*shared_mean), aes(x = x)) +
   stat_function(fun = dpois, args=list(lambda=shared_mean))+
   theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16)) + 
   labs(title="Poisson")
-pExponential<-ggplot(data.frame(x = c(0, 4)*shared_mean), aes(x = x)) +
+pExponential<-
+  ggplot(data.frame(x = c(0, 4)*shared_mean), aes(x = x)) +
   stat_function(fun = dexp, args=list(rate=1/shared_mean))+
   theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16)) + 
   labs(title="Exponential")
 plot_grid(pNorm, pLNorm, pPoiss, pExponential)
 
