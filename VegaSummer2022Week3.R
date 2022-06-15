@@ -551,6 +551,7 @@ dist_means_100 %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~         Summary statistics of real data:
 #~~            CFU/worm in C. elegans
+#
 # Let's return to the PathogenCounts data set
 pPathogenCount
 
