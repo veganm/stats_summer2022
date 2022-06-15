@@ -171,26 +171,47 @@ PathogenStats$cv<-PathogenStats$mean/PathogenStats$std_dev
 PathogenStats$log_cv<-PathogenStats$log_mean/PathogenStats$log_std_dev
 PathogenStats  
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+#~~~~~~~~~          Homework for summary, grouping and mutations
+#
+# A) Using the weather data frame, write code to get the mean and standard deviation temperature for each day in 2013 for NYC.
+#
+# B) Using the flights data frame, identify how many flights took off for each of the three airports for each carrier.
+# B.1) Plot the number of flights for each airport and carrier with month as the x-axis.
+#
+# C) Consider the diamonds data frame included in the ggplot2 package.
+diamonds
+
+# C.1) Group these data by cut, then calculate mean, median, and IQR for price within each cut type.
+# Store this information in a new tibble, then ungroup the data.
+# C.2) Plot out price data grouped by (1) cut and (2) clarity. Create these plots again using a different plot type.
+# Save all of these plots in a single image file using ggsave().
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 #              LOOPING AND ITERATION IN R: FOR LOOPS
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 # RULE OF THUMB: Never copy/paste code more than twice.
 # Instead, execute the SAME code repeatedly via iteration or functions.
+# Pat Schloss (of mothur and Riffomonas) calls this DRY - Don't Repeat Yourself.
 #
 # Loops execute a block of code over and over again until the close condition is met.
-# A for() loop takes a sequence and runs from start to end in units of 1 unless told otherwise
+# A for() loop takes a sequence and runs from start to end in units of 1 unless told otherwise.
+# The for() loop has the format
+# for(index in range) {do stuff}
 
 for (i in 1:5) {
   print(i)
 }
 
-# It is technically possible to use increments other than 1 by creating a sequence for the loop to follow:
+# It is technically possible to use increments other than 1 by creating a sequence for the loop to follow
+# (and the brackets can be omitted if the loop contains only one line of code):
 seq(0,10,2)
 for (i in seq(0, 10, 2)) print(i)
 
-# For loops can call other functions in R so those functions can be used repeatedly.
+# For loops can call other functions in R.
 # Let's say we have a tibble:
 df <- tibble(
   a = rnorm(10),
@@ -364,7 +385,11 @@ theme_classic
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~              WRITING A FUNCTION
 # A function in R has the form:
-# nameOfFunction <- function(argument1, argument2, ...) {expression}
+# nameOfFunction <- function(argument1, argument2, ...) {
+#                     #expression that does stuff
+#                     result <- #put stuff here
+#                     return(result)
+#                     }
 # The function starts by collecting arguments (in parentheses, some of which have default values)
 # which will be passed to the code in curly brackets {expression}
 f_add_1<-function(x) {x+1}
