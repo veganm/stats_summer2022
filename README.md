@@ -5,4 +5,6 @@ PathogenCount.csv contains single worm data for colonization of N2 adult worms o
 
 sim_means_4dist.R script contains (awkward, memory-inefficient) code for generating averages from samples drawn from four different distributions (normal, lognormal, Poisson, exponential) all with expectation mean=1
 
+sim_means_4dist_fast.R script contains (slightly less memory-inefficient) code for generating averages from samples drawn from four different distributions (normal, lognormal, Poisson, exponential) all with expectation mean=1
+
 wormboot.R script contains (awkward, memory-inefficient) code for creating simulated batch-based CFU/worm data by resampling a user-input vector of CFU/worm data
