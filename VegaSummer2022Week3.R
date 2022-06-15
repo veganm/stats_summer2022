@@ -468,11 +468,20 @@ skewness(y_lnorm)
 n_reps<-20 # number of "samples" to take
 sample_sizes<-c(2,5,10,20,100) # number of "measurements" in a "sample"
 shared_mean<-1 # our data will have the same true mean
+
+start_time<-Sys.time()
 dist_means_20<-sim_means_4dist(n_reps=n_reps, sample_sizes=sample_sizes, shared_mean=shared_mean)
+end_time<-Sys.time()
+end_time-start_time
+
+start_time<-Sys.time()
+dist_means_20_f<-sim_means_4dist_fast(n_reps=n_reps, sample_sizes=sample_sizes, shared_mean=shared_mean)
+end_time<-Sys.time()
+end_time-start_time
 
 # Plot out histograms of simulated data
 # The red line is the true mean for all populations
-pdist_means_20<-dist_means_20 %>%
+pdist_means_20<-dist_means_20_f %>%
   ggplot(aes(x=means)) +
   #geom_histogram(aes(y = ..density..), color = "white", binwidth=1) +
   geom_histogram(color = "white", binwidth=0.25) +
@@ -487,7 +496,17 @@ pdist_means_20
 # Note we are switching to facet_grid() for this display - 
 # this works well when you have two discrete identifying variables
 # and all combinations of these variables are present in the data
+
+start_time<-Sys.time()
 dist_means_100<-sim_means_4dist(n_reps=100, sample_sizes=sample_sizes, shared_mean=shared_mean)
+end_time<-Sys.time()
+end_time-start_time
+
+start_time<-Sys.time()
+dist_means_100_f<-sim_means_4dist_fast(n_reps=100, sample_sizes=sample_sizes, shared_mean=shared_mean)
+end_time<-Sys.time()
+end_time-start_time
+
 pdist_means_100<-dist_means_100 %>%
   ggplot(aes(x=means)) +
   #geom_histogram(aes(y = ..density..), color = "white", binwidth=1) +
