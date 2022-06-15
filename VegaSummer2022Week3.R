@@ -272,8 +272,10 @@ start_time-end_time
 
 # In general, it will be much less efficient to update an object in each iteration.
 
-# HOMEWORK: Pick one of the loops in section 21.2.1 of R for Data Science.
-# For next week, write a for loop to perform that task.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#               HOMEWORK FOR LOOPS
+# D) Pick one of the loops in section 21.2.1 of R for Data Science.
+# For next week, write a for loop to perform that task. 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
