@@ -78,3 +78,34 @@ diamonds %>%
   facet_grid(rows=vars(cut), cols=vars(clarity))
 ggsave("diamond_price_by_cut_clarity,png", width=12, height=8, units="in")
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#               HOMEWORK FOR LOOPS
+# D) Pick one of the loops in section 21.2.1 of R for Data Science.
+# For next week, write a for loop to perform that task.
+
+# Let's pick the second one:
+# Determine the type of each column in nycflights13::flights.
+glimpse(flights)
+
+# We need to know how many columns there are (19) to know how long to iterate
+dim(flights)
+dim(flights)[2]
+
+# And we need to be able to take data types
+?str
+str(flights)
+?class
+class(flights[[1]])
+
+# Now we have to establish the three parts of our for loop
+output<-vector("character", length=dim(flights)[2]) # Someplace to keep the output
+for (i in seq_along(dim(flights)[2])){        # A loop that iterates over a range
+  output[i]<-class(flights[i])  # and does something each time
+}
+
+# What went wrong?
+
+# want to do this without a for() loop?
+?sapply
+sapply(flights, "class")
