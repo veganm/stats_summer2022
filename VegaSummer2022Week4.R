@@ -12,8 +12,8 @@
 #   https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data
 #
 # We will:
-# - learn about iteration and generating functions in R
-# - learn more about how to generate summary statistics for data in R
+# - learn more about iteration and generating functions in R
+# - learn about statistical distributions in R
 # - review the concept of random sampling
 # - review summary statistics of data
 # - continue learning about the concept of (log)normality as applied to biological data
@@ -46,20 +46,46 @@ glimpse(PathogenCount)
 # S. aureus day 1 has 31 observations, let's match that number of data points
 ?rnorm
 hist(rnorm(31))
+
 # Now let's allow the simulated data to have the same mean and SD as the count data
-hist(rnorm(31, mean=7325, sd=11592))
+PathogenCountStats_SA1<-PathogenCount %>%
+  filter(Species=="SA" & Date==1) %>%
+  summarize(mean_count=mean(Count),
+          sd_count=sd(Count))
+PathogenCountStats_SA1
+
+# Note we are using the hist() function from base R here
+hist(rnorm(31, mean=PathogenCountStats_SA1$mean_count, sd=PathogenCountStats_SA1$sd_count),
+     breaks=100,
+     main="Histogram of rnorm(PathogenCountStats SA 1)",
+     xlab="Simulated CFU/Worm")
+
 # What's wrong here? What is true of these data that can't be true of pathogen counts?
 
 # Let's instead use the mean and SD of the log10-transformed data - is this better?
 # Run the histogram a few times -  what do you see?
-hist(rnorm(31, mean=3.49, sd=0.591), breaks=10, xlim=c(0,6))
+PathogenCountStats_SA1<-PathogenCount %>%
+  filter(Species=="SA" & Date==1) %>%
+  summarize(mean_count=mean(Count),
+            sd_count=sd(Count),
+            mean_logcount=mean(logCount),
+            sd_logcount=sd(logCount))
+PathogenCountStats_SA1
+
+hist(rnorm(31, mean=PathogenCountStats_SA1$mean_logcount, sd=PathogenCountStats_SA1$sd_logcount), 
+     breaks=10, xlim=c(0,6),
+     main="Histogram of rnorm(PathogenCountStats SA 1), log-transformed data",
+     xlab="Simulated CFU/Worm")
 
 # Is the normal a good match for the log-transformed real CFU data?
 # This would imply that the CFU data are lognormal, btw.
 # First let's just compare the histogram of the real data to the normal.
-# We'll need to pre-generate our Gaussian data; note that we are plotting a density histogram (scaled to 1)
+# We'll need to pre-generate our Gaussian data 
 set.seed(0)
-data<-tibble(x=rnorm(1000, mean=3.49, sd=0.591))
+data<-tibble(x=rnorm(1000, mean=PathogenCountStats_SA1$mean_logcount, sd=PathogenCountStats_SA1$sd_logcount))
+
+# Plot out the real data with the new random normal data over top
+# Note that we are plotting a density histogram (scaled to 1)
 PathogenCount %>%
   filter(Species=="SA" & Date==1) %>%
   ggplot(aes(x=logCount))+
@@ -72,6 +98,7 @@ PathogenCount %>%
 PathogenCount  %>%
   filter(Species=="SA" & Date==1) %>%
   {list(qqnorm(.$Count, pch=1, frame=FALSE), qqline(.$Count, col="red", lwd=2))}
+
 # And then for the log-transformed data
 PathogenCount  %>%
   filter(Species=="SA" & Date==1) %>%
@@ -82,23 +109,36 @@ PathogenCount  %>%
 PathogenCount  %>%
   filter(Species=="SA" & Date==3) %>%
   {list(qqnorm(.$logCount, pch=1, frame=FALSE), qqline(.$logCount, col="red", lwd=2))}
-# For the pooled S. aureus data
+
+# And finally for the pooled S. aureus data
 PathogenCount  %>%
   filter(Species=="SA") %>%
   {list(qqnorm(.$logCount, pch=1, frame=FALSE), qqline(.$logCount, col="red", lwd=2))}
-# and for the pooled S. enterica data
+
+# Now let's look at the pooled S. enterica data
 PathogenCount  %>%
   filter(Species=="SE") %>%
   {list(qqnorm(.$logCount, pch=1, frame=FALSE), qqline(.$logCount, col="red", lwd=2))}
 
-# Let's look back at the PathogenStats we generated.
-PathogenStats
+# Let's generate a more complete set of Pathogen Count Stats for S. aureus day 1.
+PathogenCountStats_SA1<-PathogenCount %>%
+  filter(Species=="SA" & Date==1) %>%
+  summarize(mean_count=mean(Count),
+            sd_count=sd(Count),
+            mean_logcount=mean(logCount),
+            sd_logcount=sd(logCount),
+            median_logcount=quantile(logCount, probs=0.5),
+            IQR_logcount=IQR(logCount),
+            skew=skewness(logCount))
+PathogenCountStats_SA1
+
 # We can ask the same statistics of the normally distributed data. What's different?
-mean(data$x) 
-sd(data$x)
-quantile(data$x, probs=0.5)
-IQR(data$x)
-skewness(data$x)
+data %>%
+  summarize(mean_x=mean(x),
+            sd_x=sd(x),
+            median_x=quantile(x, probs=0.5),
+            IQR_x=IQR(x),
+            skew=skewness(x))
 
 # There are also statistical tests for normality, such as the Shapiro-Wilk test
 shapiro.test(PathogenCount$logCount[PathogenCount$Species=="SA" & PathogenCount$Date==1])
@@ -107,14 +147,18 @@ shapiro.test(PathogenCount$logCount[PathogenCount$Species=="SA" & PathogenCount$
 shapiro.test(PathogenCount$logCount[PathogenCount$Species=="SA"])
 shapiro.test(PathogenCount$logCount[PathogenCount$Species=="SE"])
 
-# Note, however, that like many tests, Shapiro starts to get weird as n changes - why?
+# What happens as the number of data points changes? Why?
 shapiro.test(data$x)
-data2<-tibble(x=rnorm(31, mean=3.49, sd=0.591))
+data2<-tibble(x=rnorm(10, mean=3.49, sd=0.591))
 shapiro.test(data2$x)
+data3<-tibble(x=rnorm(5000, mean=3.49, sd=0.591))
+shapiro.test(data3$x)
 
 # Other tests for normality (Anderson-Darling, Komolgorov-Smirnov) differ in sensitivity
 #K-S is in base R and compares to a default N(0,1) as shown here
 ks.test(data$x, "pnorm")
+
+# What does this mutation do? What is the effect on the test? Why?
 data<-data %>%
   mutate(y=(x-3.49)/0.591)
 ks.test(data$y, "pnorm")
@@ -123,6 +167,7 @@ ks.test(data$y, "pnorm")
 # and assumes mean and SD of the normal distribution are as in the data
 ad.test(data$x)
 ad.test(data2$x)
+ad.test(data3$x)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
