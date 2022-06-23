@@ -11,6 +11,14 @@ weather %>%
   summarize(day_mean=mean(temp),
             day_sd=sd(temp))
 
+# This generates a 31 x 3 tibble.
+# How many days are in a year?
+# We have to group by month first!
+weather %>%
+  group_by(month, day) %>%
+  summarize(day_mean=mean(temp),
+            day_sd=sd(temp))
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 # B) Using the flights data frame, identify how many flights took off for each of the three airports for each carrier.
 glimpse(flights)
@@ -23,6 +31,23 @@ flights %>%
 
 
 # B.1) Plot the number of flights for each airport and carrier with month as the x-axis.
+
+# From Zee:
+flights %>% 
+  group_by(origin,carrier,month) %>% 
+  mutate(n_flights = n()) %>% 
+  ggplot(mapping=aes(factor(month),n_flights,fill=carrier))+
+  facet_wrap(~origin,
+             scales = "fixed",
+             nrow=3)+
+  geom_bar(stat="identity", position="dodge")+
+  labs(title = "Number of Flights from each Airport and Carrier in Each Month",
+       x = "Months",
+       y = "Number of Flights")+
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size=20))+
+  theme(legend.title = element_blank())+
+  theme_bw()
 
 # One way you probably shouldn't do this:
 # first we have to get this information
@@ -39,8 +64,9 @@ flight_counts_monthly<-flights %>%
   summarise(flight_count=n())
 flight_counts_monthly %>%
   ggplot(aes(x=month, y=flight_count)) +
+  scale_y_log10()+
   geom_line(size=1) +
-  facet_grid(rows=vars(origin), cols=vars(carrier), scales="free_y")
+  facet_grid(rows=vars(origin), cols=vars(carrier), scales="fixed")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
@@ -50,16 +76,50 @@ diamonds
 # C.1) Group these data by cut, then calculate mean, median, and IQR for price within each cut type.
 # Store this information in a new tibble, then ungroup the data.
 
-# A start; how do we finish?
-diamonds %>%
+# Pretty basic at this point
+diamonds_by_cut<-diamonds %>%
   group_by(cut) %>%
   summarize(mean_by_cut=mean(price),
             median_by_cut=median(price),
-            IQR_by_cut=IQR(price))
+            IQR_by_cut=IQR(price)) %>%
+  ungroup()
 
 
 # C.2) Plot out price data grouped by (1) cut and (2) clarity. Create these plots again using a different plot type.
 # Save all of these plots in a single image file using ggsave().
+
+# From Zee:
+diamonds %>% 
+  group_by(cut,clarity) %>% 
+  summarize(mean = mean(price)) %>% 
+  ggplot(mapping=aes(cut,mean,color=clarity))+ #Needs to be fill
+  geom_bar(stat="identity",
+           position = "dodge")+
+  scale_fill_viridis_d(option = "inferno")+
+  labs(title = "Cut vs Clarity",
+       x = "Diamond Cut",
+       y = "Price ($)")+
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size=20))+
+  theme(legend.title = element_blank())+
+  theme_dark()
+
+# Also from Zee:
+diamonds %>% 
+  ggplot(mapping=aes(cut,price,fill=clarity))+
+  geom_violin()+
+  scale_y_log10()+
+  facet_wrap(~clarity,
+             scales = "fixed")+
+  scale_fill_viridis_d(option = "plasma")+
+  labs(x = "Diamond Cut",
+       y = "Price ($)")+
+  theme_bw()+
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text = element_text(size=8))+
+  theme(legend.position="none")
+
+?scale_fill_viridis_d
 
 # One way that technically works but gives bad results:
 diamonds %>%
@@ -71,7 +131,8 @@ ggsave("diamond_price_by_cut_clarity,png", width=12, height=8, units="in")
 # A slight improvement:
 diamonds %>%
   ggplot(aes(x=price)) +
-  geom_histogram(color = "white", fill = "steelblue")+
+  geom_histogram(color = "white", fill = "black")+
+  theme_classic()+
   scale_x_log10()+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   labs(x=expression(log[10](price)))+
@@ -105,6 +166,19 @@ for (i in seq_along(dim(flights)[2])){        # A loop that iterates over a rang
 }
 
 # What went wrong?
+class(flights[1])
+class(flights[[1]])
+dim(flights)[2]
+
+# Fix
+output<-vector("character", length=dim(flights)[2]) # Someplace to keep the output
+length(dim(flights)[2])
+for (i in seq_along(flights)){        # A loop that iterates over a range
+  #print(i) # For troubleshooting
+  #print(class(flights[[i]])) # For troubleshooting
+  output[i]<-class(flights[[i]])[1]  # and does something each time
+}
+output
 
 # want to do this without a for() loop?
 ?sapply
