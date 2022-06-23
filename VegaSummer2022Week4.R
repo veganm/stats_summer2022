@@ -222,11 +222,90 @@ f_add_1()
 # This code is provided in script sim_means_4dist.R
 # Go run the script now.
 # What will the code do?
+
+sim_means_4dist<-function(n_reps, sample_sizes, shared_mean){
+  # A function to generate simulated distributions of means
+  # using the normal, lognormal, exponential, and Poisson distributions 
+  # Data generated are average values for simulated "samples"
+  # n_reps is the number of "samples" to generate
+  # sample_sizes is a vector of sample sizes
+  # shared_mean is the population mean for all three distributions
+  # Returns a tibble where observed mean values are stored for each "sample"
+  
+  # Create an empty tibble with three named columns
+  distribution_means<-tibble(dist_name=character(),
+                             sample_size=numeric(),
+                             means=numeric())
+  # and populate it
+  # Iterate over each of the values in the vector of sample sizes
+  for (i in 1:length(sample_sizes)){
+    # Within each sample size, execute the indicated number of replicates
+    for (j in 1:n_reps){
+      # For each replicate, update the distribution_means object with the new data
+      distribution_means<-rbind(distribution_means,
+                                tibble(
+                                  dist_name=c("Norm", "LNorm", "Pois", "Exp"),
+                                  sample_size=sample_sizes[i],
+                                  means=c(mean(rnorm(sample_sizes[i], mean=shared_mean, sd=shared_mean)),
+                                          mean(rlnorm(sample_sizes[i], 
+                                                      mean=(log(shared_mean)-(shared_mean^2)/2), 
+                                                      sd=log(shared_mean)+shared_mean)),
+                                          mean(rpois(sample_sizes[i], lambda=shared_mean)),
+                                          mean(rexp(sample_sizes[i], rate=1/shared_mean)))
+                                )
+      )
+    }
+  }
+  return(distribution_means)
+}
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #     ANOTHER FUNCTION THAT DOES THE SAME THING ONLY FASTER
-# There is another function in the script sim_means_4dist_fast.R
+# There is another function named sim_means_4dist_fast()
 # Go run that script too.
 # What's different?
+
+sim_means_4dist_fast<-function(n_reps, sample_sizes, shared_mean){
+  # A function to generate simulated distributions of means
+  # using the normal, lognormal, exponential, and Poisson distributions 
+  # Data generated are average values for simulated "samples"
+  # n_reps is the number of "samples" to generate
+  # sample_sizes is a vector of sample sizes
+  # shared_mean is the population mean for all three distributions
+  # Returns a tibble where observed mean values are stored for each "sample"
+  
+  # Create an empty temporary vector of defined size to hold the data
+  temp<-vector("list", length=length(sample_sizes)*n_reps)
+  
+  # and populate it
+  # Establish an index which will be used to store data
+  idx<-1
+  # Iterate over each of the values in the vector of sample sizes
+  for (i in 1:length(sample_sizes)){
+    #print(i) # for debugging
+    # Within each sample size, execute the indicated number of replicates
+    for (j in 1:n_reps){
+      #print(j) # for debugging
+      # Within each replicate, create a tibble with the mean from each sample
+      # and staple it into the temporary vector
+      temp[[idx]]<-tibble(dist_name=c("Norm", "LNorm", "Pois", "Exp"),
+                          sample_size=sample_sizes[i],
+                          means=c(mean(rnorm(sample_sizes[i], mean=shared_mean, sd=shared_mean)),
+                                  mean(rlnorm(sample_sizes[i], 
+                                              mean=(log(shared_mean)-(shared_mean^2)/2), 
+                                              sd=log(shared_mean)+shared_mean)),
+                                  mean(rpois(sample_sizes[i], lambda=shared_mean)),
+                                  mean(rexp(sample_sizes[i], rate=1/shared_mean)))
+      )
+      idx<-idx+1
+    }
+  }
+  # Rearrange the finished data from temp into a proper tibble
+  # with columns dist_name, sample_size, and means
+  distribution_means<-dplyr::bind_rows(temp)
+  return(distribution_means)
+}
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~                OK, back to the story.
 #~~~~              Populations of sample means:
@@ -391,7 +470,7 @@ dist_means_100 %>%
 #~~            CFU/worm in C. elegans
 #
 # Let's return to the PathogenCounts data set
-pPathogenCount
+PathogenCount
 
 # We already know these data are at best log-normal, so what do the means look like?
 # Fortunately, we have experimental data to show this
@@ -413,8 +492,39 @@ pBatchSA
 
 # We can get the same effect by creating synthetic "batches" off of the CFU/worm data
 # using function wormboot() from script wormboot.R
-# Go run that script now
-?subset
+wormboot<-function(reps, mydata){
+  # Expects a number of reps for the bootstrap (reps)
+  # and a vector of worm CFU data for individuals (mydata)
+  # Returns a data frame of simulated batch digests
+  # with batch sizes 1, 5, 10, 20, 50 worms/batch
+  # values reported as inferred CFU/worm and log10(CFU/worm)
+  capp<-length(mydata)
+  batch5<-rep(0,reps)
+  batch10<-rep(0,reps)
+  batch20<-rep(0,reps)
+  batch50<-rep(0, reps)
+  for(i in 1:reps){
+    idx5<-sample(1:capp,5,replace=TRUE)
+    idx10<-sample(1:capp,10,replace=TRUE)
+    idx20<-sample(1:capp,20,replace=TRUE)
+    idx50<-sample(1:capp,50,replace=TRUE)
+    batch5[i]<-mean(mydata[idx5])
+    batch10[i]<-mean(mydata[idx10])
+    batch20[i]<-mean(mydata[idx20])
+    batch50[i]<-mean(mydata[idx50])
+  }
+  batch5log<-log10(batch5+1)
+  batch10log<-log10(batch10+1)
+  batch20log<-log10(batch20+1) 
+  batch50log<-log10(batch50+1) 
+  batch<-c(rep(1,times=capp), rep(5, times=reps), rep(10, times=reps), rep(20, times=reps), rep(50, times=reps))
+  logCFU<-log10(mydata)
+  logCount<-c(logCFU, batch5log, batch10log, batch20log, batch50log)
+  Count<-c(mydata, batch5, batch10, batch20, batch50)
+  dataSet<-data.frame(batch, Count, logCount)
+  return(dataSet)
+}
+
 
 # Once the function is loaded, we can use it.
 names(PathogenCount)
