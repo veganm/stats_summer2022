@@ -1,5 +1,6 @@
 # Week 5, Vega lab meeting 2022
 # Today we will be learning about normality and log-normality
+# in the context of random variables and random sampling
 # using code and other material from
 #   https://moderndive.com/3-wrangling.html
 #   https://r4ds.had.co.nz/iteration.html
@@ -10,6 +11,8 @@
 #
 #  Background material for this section is from
 #   https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data
+#   https://www.khanacademy.org/math/statistics-probability/random-variables-stats-library
+#   https://www.khanacademy.org/math/statistics-probability/designing-studies
 #
 # We will:
 # - learn more about iteration and generating functions in R
