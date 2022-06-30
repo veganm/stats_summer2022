@@ -45,20 +45,58 @@ glimpse(PathogenCount)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #               Back to the data analysis.
+# We had been dealing with the PathogenStats data file
+# Let's look at those counts again
+pPathogenCount<-PathogenCount %>%
+  ggplot(aes(x=factor(Date), y=logCount, color=factor(Date))) +
+  geom_jitter(shape=16, position=position_jitter(0.05)) +
+  geom_violin(fill=NA) + 
+  #geom_violin()+ # If we don't remove the fill, the violin will hide the data points
+  theme_classic() + 
+  theme(text=element_text(size=14), 
+        axis.title.x = element_text(size=14), 
+        axis.text.x = element_text(size=12),
+        legend.position = "none", 
+        plot.title=element_text(hjust=0.5, size=14)) + 
+  labs(title="", y=expression(log[10](CFU/worm)), x="Sampling Day")+
+  facet_wrap(~Species, ncol=1)
+pPathogenCount
+
+# QUESTION: Do these data look normal? How can we tell?
+# Note that we are plotting the log10-transformed data. What can we infer about the raw counts?
+
+# Let's generate the summary statistics
+# What will the PathogenStats tibble contain?
+# Remember - what does n() give?
+PathogenStats<- PathogenCount %>%
+  group_by(Species, Date) %>%
+  summarize(mean = mean(Count), 
+            std_dev = sd(Count),
+            q50=quantile(Count, probs=0.5),
+            IQR=IQR(Count),
+            skew = skewness(Count),
+            kurt = kurtosis(Count),
+            log_mean=mean(logCount),
+            log_std_dev=sd(logCount),
+            log_q50=quantile(logCount, probs=0.5),
+            log_IQR=IQR(logCount),
+            log_skew = skewness(logCount),
+            log_kurt = kurtosis(logCount),
+            n=n())
+PathogenStats
+
 # Now we can start making comparisons with the normal distribution
 # S. aureus day 1 has 31 observations, let's match that number of data points
 ?rnorm
 hist(rnorm(31))
 
 # Now let's allow the simulated data to have the same mean and SD as the count data
-PathogenCountStats_SA1<-PathogenCount %>%
-  filter(Species=="SA" & Date==1) %>%
-  summarize(mean_count=mean(Count),
-            sd_count=sd(Count))
+PathogenCountStats_SA1<-PathogenStats %>%
+  filter(Species=="SA" & Date==1)
 PathogenCountStats_SA1
 
 # Note we are using the hist() function from base R here
-hist(rnorm(31, mean=PathogenCountStats_SA1$mean_count, sd=PathogenCountStats_SA1$sd_count),
+hist(rnorm(31, mean=PathogenCountStats_SA1$mean, sd=PathogenCountStats_SA1$std_dev),
      breaks=100,
      main="Histogram of rnorm(PathogenCountStats SA 1)",
      xlab="Simulated CFU/Worm")
