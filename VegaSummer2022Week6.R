@@ -81,7 +81,7 @@ skewness(data_markov)
 IQR(data_markov)
 
 # What will happen when we decrease or increase the number of steps?
-# Try each nsteps below; go back to line 219 and re-run the loop.
+# Try each nsteps below; go back to line 65 and re-run the loop.
 nsteps<-10
 nsteps<-50
 
@@ -90,7 +90,7 @@ nsteps<-50
 # First we define the parameters of our process
 reps<-1000
 nsteps<-20
-cLN<-1.3 # the "c" from the paper's lognormal simulation
+cLN<-1.5 # the "c" from the paper's lognormal simulation
 step_choice<-c(cLN, 1/cLN)
 
 # and declare an object to keep our data
@@ -196,6 +196,17 @@ glimpse(PathogenCount)
 # First let's just compare the histogram of the real data to the normal.
 # We'll need to pre-generate our Gaussian data 
 set.seed(0)
+# Let's generate a more complete set of Pathogen Count Stats for S. aureus day 1.
+PathogenCountStats_SA1<-PathogenCount %>%
+  filter(Species=="SA" & Date==1) %>%
+  summarize(mean_count=mean(Count),
+            sd_count=sd(Count),
+            mean_logcount=mean(logCount),
+            sd_logcount=sd(logCount),
+            median_logcount=quantile(logCount, probs=0.5),
+            IQR_logcount=IQR(logCount),
+            skew=skewness(logCount))
+PathogenCountStats_SA1
 data<-tibble(x=rnorm(1000, mean=PathogenCountStats_SA1$mean_logcount, sd=PathogenCountStats_SA1$sd_logcount))
 
 # Plot out the real data with the new random normal data over top
@@ -331,7 +342,8 @@ jointSaBoot %>%
     #axis.text.x = element_blank(),
     plot.title=element_text(hjust=0.5,size=14),
     legend.position="none")+
-  stat_compare_means(label.y = 0.05, label.x=1.1) +
+  stat_compare_means(label.y = 5.5, label.x=1) +
+  stat_compare_means(method="t.test", label.y = 0.1, label.x=1) +
   labs(title="Simulated batch digests", x="Sampling Day", y=expression(log[10](CFU/Worm)))+
   facet_wrap(~batch, nrow=1)
 
