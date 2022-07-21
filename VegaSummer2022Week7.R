@@ -187,14 +187,14 @@ sim_pvals<-tibble(t_n=numeric(reps),
 
 set.seed(1234)  # seed the random number generator
 mu<-25 # and establish the parameters of the distributions
-sdev<-2
+sdev<-5
 
 # and run the simulation
 for (i in seq_len(reps)){
   # normal
   weight = round(rnorm(10, mu, sdev), 1)
-  ttest_n<-t.test(weight, mu=25)
-  wtest_n<-wilcox.test(weight, mu=25, exact=FALSE)
+  ttest_n<-t.test(weight, mu=mu)
+  wtest_n<-wilcox.test(weight, mu=mu, exact=FALSE)
   sim_pvals$t_n[i]<-ttest_n$p.value
   sim_pvals$w_n[i]<-wtest_n$p.value
   # lognormal
