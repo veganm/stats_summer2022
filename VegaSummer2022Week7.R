@@ -14,9 +14,10 @@
 # We will:
 # - Review standard work-horse hypothesis tests
 # - Discuss the assumptions made by these tests
+# - Understand the consequences of violating test assumptions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # First, as usual, we will load the libraries we need
-packages<-c("tidyverse", "cowplot", "e1071", "ggpubr")
+packages<-c("tidyverse", "cowplot", "ggpubr")
 install.packages(setdiff(packages, rownames(installed.packages())))
 
 library(tidyverse)
@@ -100,7 +101,7 @@ t.test(my_data$weight, mu = 25,
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # but what if the data weren't normal?
-# In this case (as we have seen) the mean isn't very informating
+# In this case (as we have seen) the mean isn't very informative
 # The Wilcoxon rank sum test for one sample can be interpreted as asking instead
 # Is the median of the data equal to some theoretical value X?
 
@@ -142,7 +143,6 @@ shapiro.test(my_data$weight)
 ggqqplot(my_data$weight, ylab = "Weight",
          ggtheme = theme_minimal())
 
-# nope.
 # The Wilcoxon test is nonparametric - 
 # by converting the data into ranks, we lose the need to assume a distribution.
 
@@ -162,6 +162,7 @@ wilcox.test(my_data$weight, mu = 25,
 wilcox.test(my_data$weight, mu = 25,
             alternative = "greater")
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Why is this necessary?
 # In this case, because the mean of a skewed distribution (the lognormal)...
 # kinda doesn't matter.
@@ -169,7 +170,8 @@ wilcox.test(my_data$weight, mu = 25,
 #
 # Also, as we saw last week, the mean of a lognormal is badly behaved, 
 # especially at small sample sizes. 
-# If the mean doesn't behave as normal (which it won't), the performance of the t-test will be erratic.
+# If the mean doesn't behave as normal (which it won't), 
+# the performance of the t-test will be erratic.
 # Let's see that happen.
 
 # Here we will generate a bunch of simulated data sets and run t-tests,
@@ -183,17 +185,19 @@ sim_pvals<-tibble(t_n=numeric(reps),
                   w_ln=numeric(reps))# someplace to put the data
 
 set.seed(1234)  # seed the random number generator
+mu<-25 # and establish the parameters of the distributions
+sdev<-2
 
 # and run the simulation
 for (i in seq_len(reps)){
   # normal
-  weight = round(rnorm(10, 25, 2), 1)
+  weight = round(rnorm(10, mu, sdev), 1)
   ttest_n<-t.test(weight, mu=25)
   wtest_n<-wilcox.test(weight, mu=25, exact=FALSE)
   sim_pvals$t_n[i]<-ttest_n$p.value
   sim_pvals$w_n[i]<-wtest_n$p.value
   # lognormal
-  weight = round(rlnorm(10, log(25), log(2)), 1)
+  weight = round(rlnorm(10, log(mu), log(sdev)), 1)
   ttest_ln<-t.test(weight, mu=25)
   wtest_ln<-wilcox.test(weight, mu=25, exact=FALSE)
   sim_pvals$t_ln[i]<-ttest_ln$p.value
@@ -224,9 +228,8 @@ length(which(sim_pvals$t_n<0.1))/reps
 length(which(sim_pvals$w_n<0.1))
 length(which(sim_pvals$w_n<0.1))/reps
 
-
 # How many do we get with the lognormal?
-# How many false positives should we get?
+# How many false positives should we get at each level?
 length(which(sim_pvals$t_ln<0.05))
 length(which(sim_pvals$t_ln<0.05))/reps
 length(which(sim_pvals$w_ln<0.05))
@@ -237,7 +240,10 @@ length(which(sim_pvals$t_ln<0.1))/reps
 length(which(sim_pvals$w_ln<0.1))
 length(which(sim_pvals$w_ln<0.1))/reps
 
+# These distributions are fairly compact (low SD) - what happens if that changes?
+# Change the parameter and run again. What do you observe?
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Comparing the means of two groups: Unpaired samples
 # 
@@ -314,11 +320,111 @@ t.test(weight ~ group, data = my_data,
 # It’s used when your data are not normally distributed. 
 # They still have to be independent, though.
 
+women_weight <- round(rlnorm(9, log(52), log(15)), 1)
+men_weight <- round(rlnorm(9, log(69), log(10)), 1) 
+# Create a data frame
+my_data <- data.frame( 
+  group = rep(c("Woman", "Man"), each = 9),
+  weight = c(women_weight,  men_weight)
+)
+
+# We want to know, if the average women’s weight differs from the average men’s weight?
+group_by(my_data, group) %>%
+  summarise(
+    count = n(),
+    mean = mean(weight, na.rm = TRUE),
+    median=median(weight, na.rm=TRUE),
+    sd = sd(weight, na.rm = TRUE)
+  )
+
+# Plot weight by group and color by group
+ggboxplot(my_data, x = "group", y = "weight", 
+          color = "group", palette = c("#00AFBB", "#E7B800"),
+          ylab = "Weight", xlab = "Groups")
+
+# Test for normality and equal variances
+with(my_data, shapiro.test(weight[group == "Man"]))
+with(my_data, shapiro.test(weight[group == "Woman"]))
+res.ftest <- var.test(weight ~ group, data = my_data)
+res.ftest
+
+# Can we use the t-test?
 res <- wilcox.test(weight ~ group, data = my_data,
                    exact = FALSE)
 res
 
+# There are one-sided tests here as well, with the same syntax
 wilcox.test(weight ~ group, data = my_data, 
             exact = FALSE, alternative = "less")
 wilcox.test(weight ~ group, data = my_data,
             exact = FALSE, alternative = "greater")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Again, what happens if we violate the assumptions of the paired test?
+# We saw a hint about this last time, but let's see it here
+# using a similar simulation as for the one-sample tests
+
+reps<-1000 # how many simulations we will run
+sim_pvals<-tibble(t_n=numeric(reps),
+                  w_n=numeric(reps),
+                  t_ln=numeric(reps),
+                  w_ln=numeric(reps))# someplace to put the data
+
+set.seed(1234)  # seed the random number generator
+mu<-52 # and establish the parameters of the distributions
+sdev<-15
+
+# and run the simulation
+for (i in seq_len(reps)){
+  # normal
+  weight1 = round(rnorm(10, mu, sdev), 1)
+  weight2 = round(rnorm(10, mu, sdev), 1)
+  ttest_n<-t.test(weight1, weight2)
+  wtest_n<-wilcox.test(weight1, weight2, exact=FALSE)
+  sim_pvals$t_n[i]<-ttest_n$p.value
+  sim_pvals$w_n[i]<-wtest_n$p.value
+  # lognormal
+  weight1 = round(rlnorm(10, log(mu), log(sdev)), 1)
+  weight2 = round(rlnorm(10, log(mu), log(sdev)), 1)
+  ttest_ln<-t.test(weight1, weight2)
+  wtest_ln<-wilcox.test(weight1, weight2, exact=FALSE)
+  sim_pvals$t_ln[i]<-ttest_ln$p.value
+  sim_pvals$w_ln[i]<-wtest_ln$p.value
+}
+
+# let's see what we have
+glimpse(sim_pvals)
+
+# plot it all out
+# Look at the shape of the distributions. What has happened?
+sim_pvals %>%
+  pivot_longer(everything(), names_to="test", values_to="p") %>%
+  ggplot(aes(x=p))+
+  geom_histogram(color="black", fill="lightgray", binwidth=0.05)+
+  geom_vline(xintercept=0.05, color="red")+
+  geom_vline(xintercept=0.1, color="blue")+
+  facet_wrap(~factor(test))
+
+# How many false positives should we get?
+length(which(sim_pvals$t_n<0.05))
+length(which(sim_pvals$t_n<0.05))/reps
+length(which(sim_pvals$w_n<0.05))
+length(which(sim_pvals$w_n<0.05))/reps
+
+length(which(sim_pvals$t_n<0.1))
+length(which(sim_pvals$t_n<0.1))/reps
+length(which(sim_pvals$w_n<0.1))
+length(which(sim_pvals$w_n<0.1))/reps
+
+# How many do we get with the lognormal?
+# How many false positives should we get at each level?
+length(which(sim_pvals$t_ln<0.05))
+length(which(sim_pvals$t_ln<0.05))/reps
+length(which(sim_pvals$w_ln<0.05))
+length(which(sim_pvals$w_ln<0.05))/reps
+
+length(which(sim_pvals$t_ln<0.1))
+length(which(sim_pvals$t_ln<0.1))/reps
+length(which(sim_pvals$w_ln<0.1))
+length(which(sim_pvals$w_ln<0.1))/reps
+
