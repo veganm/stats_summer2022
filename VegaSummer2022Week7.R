@@ -10,6 +10,7 @@
 # https://www.khanacademy.org/math/statistics-probability/designing-studies
 # https://www.khanacademy.org/math/statistics-probability/significance-tests-one-sample
 # https://www.khanacademy.org/math/statistics-probability/significance-tests-confidence-intervals-two-samples
+# https://www.youtube.com/watch?v=vemZtEM63GY
 #
 # We will:
 # - Review standard work-horse hypothesis tests
@@ -17,13 +18,13 @@
 # - Understand the consequences of violating test assumptions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # First, as usual, we will load the libraries we need
-packages<-c("tidyverse", "cowplot", "ggpubr")
+packages<-c("tidyverse", "cowplot", "ggpubr" , "PairedData")
 install.packages(setdiff(packages, rownames(installed.packages())))
 
 library(tidyverse)
 library(cowplot)
 library(ggpubr)
-
+library(PairedData)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -427,4 +428,92 @@ length(which(sim_pvals$t_ln<0.1))
 length(which(sim_pvals$t_ln<0.1))/reps
 length(which(sim_pvals$w_ln<0.1))
 length(which(sim_pvals$w_ln<0.1))/reps
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#           Paired-sample tests
+# 
+# Paired sample tests are used when we have pairs of values
+# (such as before and after a treatment, for example)
+# for a set of samples, such that every subject is represented by a pair of data points.
+#
+# As an example of data, 10 mice received a treatment X over a 3 month treatment period. 
+# We want to know whether the treatment X has an impact on the weight of the mice.
+# 
+# Both the t-test and the Wilcoxon test can be used on paired data;
+# the assumptions are the same as before.
+# For the t-test, 
+# H0: mean difference (before vs. after) = 0
+# Ha: mean difference != 0
+# and the DIFFERENCES must be normally distributed.
+
+# Let's try it.
+# Data in two numeric vectors
+# ++++++++++++++++++++++++++
+# Weight of the mice before treatment
+before <-c(200.1, 190.9, 192.7, 213, 241.4, 196.9, 172.2, 185.5, 205.2, 193.7)
+# Weight of the mice after treatment
+after <-c(392.9, 393.2, 345.1, 393, 434, 427.9, 422, 383.9, 392.3, 352.2)
+# Create a data frame
+my_data <- data.frame( 
+  group = rep(c("before", "after"), each = 10),
+  weight = c(before,  after)
+)
+
+# Some summary statistics
+group_by(my_data, group) %>%
+  summarise(
+    count = n(),
+    mean = mean(weight, na.rm = TRUE),
+    sd = sd(weight, na.rm = TRUE)
+  )
+
+# and plot out paired data
+pd <- paired(before, after)
+plot(pd, type = "profile") + theme_bw()
+
+#### Are the differences normally distributed?
+# compute the difference
+d <- with(my_data, 
+          weight[group == "before"] - weight[group == "after"])
+# Shapiro-Wilk normality test for the differences
+shapiro.test(d) 
+
+# If so, we can use the paired sample t-test to test support for H0
+# Compute t-test
+# We can save data in two numeric vectors
+res <- t.test(before, after, paired = TRUE)
+res
+
+# or as a data frame, depending on how we create the call
+res <- t.test(weight ~ group, data = my_data, paired = TRUE)
+res
+
+# As you can see, the results are the same.
+
+# As always, there are one-tailed options:
+t.test(weight ~ group, data = my_data, paired = TRUE,
+       alternative = "less")
+t.test(weight ~ group, data = my_data, paired = TRUE,
+       alternative = "greater")
+
+###   Wilcoxon paired test
+# If the differences were non-normal, we could use Wilcoxon instead.
+# As always, the syntax is similar.
+
+# To save results as numeric vectors:
+res <- wilcox.test(before, after, paired = TRUE)
+res
+
+# To save results as a data frame:
+res <- wilcox.test(weight ~ group, data = my_data, paired = TRUE)
+res
+
+# And one-tailed options:
+wilcox.test(weight ~ group, data = my_data, paired = TRUE,
+            alternative = "less")
+wilcox.test(weight ~ group, data = my_data, paired = TRUE,
+            alternative = "greater")
+
 
