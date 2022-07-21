@@ -10,6 +10,7 @@
 # https://www.khanacademy.org/math/statistics-probability/designing-studies
 # https://www.khanacademy.org/math/statistics-probability/significance-tests-one-sample
 # https://www.khanacademy.org/math/statistics-probability/significance-tests-confidence-intervals-two-samples
+# https://www.youtube.com/watch?v=vemZtEM63GY
 #
 # We will:
 # - Review standard work-horse hypothesis tests
