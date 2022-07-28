@@ -1,5 +1,5 @@
 # stats_summer2022
-R code and data files for Vega lab meetings in summer 2022
+R code and data files for Vega lab meetings in summer 2022, re: statistical fundamentals and stupid R tricks for fun and profit.
 
 PathogenCount.csv contains single worm data for colonization of N2 adult worms on plates of S. enterica-GFP (SE) or S. aureus-GFP (SA)
 
