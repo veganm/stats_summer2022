@@ -9,7 +9,11 @@ pacman::p_load(tidyverse, effectsize, pwr)
 set.seed(1234)
 my_data <- data.frame(
   group = rep(c("A", "B"), each=10), 
+<<<<<<< HEAD
   data = c(round(rnorm(10, 20, 2), 1), round(rnorm(10, 22, 2), 1))
+=======
+  data = c(round(rnorm(10, 20, 2), 1), round(rnorm(10, 25, 2), 1))
+>>>>>>> a1208e1d554cc5e4735cc698c495c386e1ca5e10
 )
 glimpse(my_data)
 
@@ -20,4 +24,8 @@ TT
 effectsize(TT)
 
 # and then the power:
+<<<<<<< HEAD
 pwr.t.test(d=-0.8, n=10, sig.level = 0.05, alternative="two.sided")
+=======
+pwr.t.test(d=-2.8, n=10, sig.level = 0.05, alternative="two.sided")
+>>>>>>> a1208e1d554cc5e4735cc698c495c386e1ca5e10
