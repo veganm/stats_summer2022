@@ -68,6 +68,7 @@ unique(dune.env$Management)
 unique(Management)
 
 # Let's see how many data points we have for each
+which(Management=="SF")
 length(which(Management=="SF"))
 length(which(Management=="BF"))
 length(which(Management=="HF"))
@@ -114,7 +115,7 @@ mydata<-dune$Alopgeni
 mydata<-dune$Anthodor
 
 # How many positives have we racked up, at p<0.05?
-# How many things did we do wromg?
+# How many things did we do wrong?
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #             DO BETTER
