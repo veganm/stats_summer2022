@@ -24,3 +24,5 @@ ftest
 #t-test: unpaired
 ttest <- t.test(CFU ~ Time, data = worms, var.equal = TRUE)
 ttest
+
+wilcox.test(CFU~Time, data=worms)
