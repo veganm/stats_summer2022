@@ -77,6 +77,7 @@ pwr.MW.test.boot<-function(my_data_1, my_data_2, sig=0.05, reps=1000){
   # Make objects to hold the results
   my_pvals<-numeric(length=reps)
   alt_pvals<-numeric(length=reps)
+
   
   # Extract parameters for simulation
   capp1<-length(my_data_1)
@@ -86,12 +87,15 @@ pwr.MW.test.boot<-function(my_data_1, my_data_2, sig=0.05, reps=1000){
   # Create a combined data object
   new_data<-c(my_data_1, my_data_2)
   
+
   # Loop
-  for (i in seq_len(reps)){
+  for (i in seq_along(reps)){
+
     # Generate new data sets by resampling
     new_data_1<-sample(my_data_1,capp1,replace=TRUE)
     new_data_2<-sample(my_data_2,capp2,replace=TRUE)
     wtest<-wilcox.test(new_data_1, new_data_2, exact=FALSE)
+
     my_pvals[i]<-wtest$p.value
     # and for the combined data
     new_data_1<-sample(new_data,capp,replace=TRUE)
@@ -101,6 +105,7 @@ pwr.MW.test.boot<-function(my_data_1, my_data_2, sig=0.05, reps=1000){
   }
   ncp<-(length(which(my_pvals<=sig))-length(which(alt_pvals<=sig)))/reps
  # ncp<-(length(which(my_pvals<=sig)))/reps
+
   d<-cohens_d(my_data_1, my_data_2)$Cohens_d
   structure(list(n1=capp1, n2=capp2, d=d, pwr=ncp))
 }
@@ -128,6 +133,7 @@ pwr.MW.test.boot(my_data_1 = my_data_1, my_data_2 = my_data_2)
 # What can we say about power of the parametric vs. non-parametric test here?
 my_data_1<-round(rnorm(10, 20, 2), 1)
 my_data_2<-round(rnorm(10, 21, 2), 1)
+
 mean(my_data_1)
 median(my_data_1)
 mean(my_data_2)
@@ -161,3 +167,7 @@ sixtymin_df <- ICC_data_df %>%
 glimpse(sixtymin_df)
 
 # Note that each trial contains data for 40 cells. 
+
+pwr.MW.test.boot(my_data_1 = my_data_1, my_data_2 = my_data_2)
+pwr.t.test(d=0.52, n=10, sig.level = 0.05, alternative="two.sided")
+
