@@ -210,9 +210,28 @@ shapiro.test(data_binom)
 plot_grid(p1, p2, p3, p4)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# What about distributions of proportional data over some variable or gradient?
 # In a PROPORTIONAL MODEL, the frequency of occurrence of events is proportional to the number of opportunities.
 # The relationship between observed frequencies and expectations from such a model
 # is assessed using a CHI-SQUARED GOODNESS OF FIT test.
+# Let's say we have data on births in a given year, and we want to know if it is equally likely
+# that a birth will occur on any given day of the week.
+
+births<-data.frame(Day=c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"),
+                  Number=c(33,41,63,63,47,56,47))
+births
+sum(births$Number)
+
+# For this test, we have
+# H0: The probability of birth is the same on every day of the week
+# Ha: The probability of birth is NOT the same on every day of the week
+
+# The chi-squared statistic is the sum of (observed-expected)^2/expected
+# Under H0, what is the expectation?
+# In the year in question, each day occurred 52 times, except Friday which occurred 53 times.
+# The expected number of births is therefore (on every day but Friday)
+(52/365)*350
+
+births_expected<-data.frame(Day=c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"),
+                            Number=c((350*52/365), (350*52/365), (350*52/365), (350*52/365), (350*52/365), (350*53/365), (350*52/365)))
+births_expected
