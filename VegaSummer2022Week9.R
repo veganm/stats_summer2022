@@ -8,9 +8,10 @@
 #   https://www.r-bloggers.com/2021/05/power-analysis-in-statistics-with-r/
 #   https://ladal.edu.au/pwr.html
 #   https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
+#   https://www.intro2r.info/unit3/swirl/Testing_Ratios
 
 # As usual we will load the required packages:
-pacman::p_load(tidyverse, effectsize, pwr, BiodiversityR, ggsci, ggrepel, ggforce, readxl)
+pacman::p_load(tidyverse, effectsize, pwr, BiodiversityR, ggsci, ggrepel, ggforce, ggpubr)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Your assignment for this week was:
@@ -149,25 +150,69 @@ pwr.t.test(d=MWpwr2$d, n=MWpwr2$n1, sig.level = 0.05, alternative="two.sided")
 # Last week, we saw some proportional data from two different sources
 # and discussed the idea that proportions are a special kind of data.
 #
+# Let's look at the squash bug data again.
+#I have some percent composition data from an experiment in which 9 bugs were successfully infected
+#with a 3:1 ratio of GFP to RFP labelled symbionts.
+low=c(0,0,0.59,0.12,0.98,0.95,0.96,1,0.99)
+
+#The question I want to test is if the average %composition of GFP symbionts is different from 25% (0.25).
+#I might want to do this because I'm looking to see if two symbionts exhibit competitive dynamics during
+#infection, with the assumption that the GFP symbiont is the superior competitor.
+comps <- data.frame(
+  name = paste0(rep("M_", 9), 1:9),
+  percentGFP = low
+)
+
+#Let's examine our data.
+# Statistical summaries of weight
+summary(comps$percentGFP)
+
+# and a histogram
+gghistogram(comps$percentGFP, 
+            bins=10,
+            xlab = "Percent GFP", ylab = "Frequency",
+            ggtheme = theme_classic())
+
+# These data are severely censored;
+# that is, there are hard boundaries at 0 and 1.
+# This is always true for proportional data.
+# Sometimes these hard boundaries aren't very important. For example, take a fair coin toss:
+
+?rbinom
+data_binom<-rbinom(1000, 10, 0.5)/10 #Fraction of successes, out of 10 trials; 1000 times; p=0.5
+
+# How do these data look?
+gghistogram(data_binom, fill="blue", bins=25, xlim=c(0,1))
+
+# Are they normally distributed? Why?
+shapiro.test(data_binom)
+
+# How can we determine if the coin is fair (probability of a success is 0.5)?
+# We have only two outcomes; for one trial, this is a BINOMIAL TEST.
+?binom.test
+data_binom[1]
+binom.test(data_binom[1]*10, 10)
+
+# We can use instead a PROPORTIONAL Z-TEST (implemented as prop.test()) when n>30,
+# since at this sample size the binomial starts approximating the normal:
+data_binom<-rbinom(1000, 10, 0.5)/10 #Fraction of successes, out of 10 trials; 1000 times; p=0.5
+p1<-gghistogram(data_binom, fill="blue", bins=25, xlim=c(0,1), main="10 trials")
+shapiro.test(data_binom)
+data_binom<-rbinom(1000, 30, 0.5)/30 #Fraction of successes, out of 30 trials; 1000 times; p=0.5
+p2<-gghistogram(data_binom, fill="blue", bins=25, xlim=c(0,1), main="30 trials")
+shapiro.test(data_binom)
+data_binom<-rbinom(1000, 50, 0.5)/50 #Fraction of successes, out of 50 trials; 1000 times; p=0.5
+p3<-gghistogram(data_binom, fill="blue", bins=25, xlim=c(0,1), main="50 trials")
+shapiro.test(data_binom)
+data_binom<-rbinom(1000, 100, 0.5)/100 #Fraction of successes, out of 100 trials; 1000 times; p=0.5
+p4<-gghistogram(data_binom, fill="blue", bins=50, xlim=c(0,1), main="100 trials")
+shapiro.test(data_binom)
+plot_grid(p1, p2, p3, p4)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # In a PROPORTIONAL MODEL, the frequency of occurrence of events is proportional to the number of opportunities.
 # The relationship between observed frequencies and expectations from such a model
 # is assessed using a CHI-SQUARED GOODNESS OF FIT test.
-
-# Let's look at the glutamate receptor data again.
-# Read in the data file
-"ICC_data_df" <-read_excel("ICC_data_Week8.xlsx")
-
-# Take a peek
-glimpse(ICC_data_df)
-
-# Isolate the 60-minute data for treatment ("mbcd") and control ("vehicle")
-sixtymin_df <- ICC_data_df %>% 
-  filter(trial==1) %>% 
-  filter(treatment == "veh60" | treatment == "mbcd60")
-glimpse(sixtymin_df)
-
-# Note that each trial contains data for 40 cells. 
-
-pwr.MW.test.boot(my_data_1 = my_data_1, my_data_2 = my_data_2)
-pwr.t.test(d=0.52, n=10, sig.level = 0.05, alternative="two.sided")
-
