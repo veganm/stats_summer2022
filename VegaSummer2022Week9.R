@@ -47,18 +47,18 @@ TT
 effectsize(TT)
 
 # Note that "d", the effect size here, is Cohen's D,
-# calculated as |mu1-mu2|/s, where s is the pooled standard deviation.
+# calculated as (mu1-mu2)/s, where s is the pooled standard deviation.
 # Cohen suggests that d values of 0.2, 0.5, and 0.8 represent small, medium, and large effect sizes respectively. 
 
 # and then the power:
-pwr.t.test(d=0.8, n=10, sig.level = 0.05, alternative="two.sided")
+pwr.t.test(d=1.28, n=10, sig.level = 0.05, alternative="two.sided")
 
 # If we drop the number of data points or decrease the effect size, power drops: 
-pwr.t.test(d=0.8, n=5, sig.level = 0.05, alternative="two.sided")
+pwr.t.test(d=1.28, n=5, sig.level = 0.05, alternative="two.sided")
 pwr.t.test(d=0.54, n=10, sig.level = 0.05, alternative="two.sided")
 
 # And if we increase n or effect size, the reverse occurs:
-pwr.t.test(d=1.35, n=10, sig.level = 0.05, alternative="two.sided")
+pwr.t.test(d=1.55, n=10, sig.level = 0.05, alternative="two.sided")
 pwr.t.test(d=0.8, n=25, sig.level = 0.05, alternative="two.sided")
 
 # The pwr package contains some other built-in power analysis functions,
@@ -116,17 +116,21 @@ pwr.MW.test.boot<-function(my_data_1, my_data_2, sig=0.05, reps=1000){
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Let's pull apart the existing data frame
-my_data_1<-my_data %>%
-  filter(group == "A") %>%
-  select(values) %>%
-  t() %>%
-  as.numeric()
-my_data_1
-my_data_2<-my_data %>%
-  filter(group == "B") %>%
-  select(values) %>%
-  t()%>%
-  as.numeric()
+#my_data_1<-my_data %>%
+ # as_tibble() %>%
+  #filter(group == "A") %>%
+ # select(values) %>%
+ # t() %>%
+ # as.numeric()
+#my_data_1
+#my_data_2<-my_data %>%
+#  filter(group == "B") %>%
+#  select(values) %>%
+#  t()%>%
+#  as.numeric()
+
+my_data_1<-round(rnorm(10, 20, 2), 1)
+my_data_2<-round(rnorm(10, 22, 2), 1)
 
 # Now we can call the new function
 pwr.MW.test.boot(my_data_1 = my_data_1, my_data_2 = my_data_2)
