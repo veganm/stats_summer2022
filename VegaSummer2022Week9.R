@@ -138,7 +138,7 @@ pwr.MW.test.boot(my_data_1 = my_data_1, my_data_2 = my_data_2)
 # What if we reduce the effect size?
 # What can we say about power of the parametric vs. non-parametric test here?
 my_data_1<-round(rnorm(10, 20, 2), 1)
-my_data_2<-round(rnorm(10, 21, 2), 1)
+my_data_2<-round(rnorm(10, 23, 2), 1)
 
 mean(my_data_1)
 median(my_data_1)
