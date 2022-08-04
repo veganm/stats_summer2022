@@ -9,6 +9,7 @@
 #   https://ladal.edu.au/pwr.html
 #   https://en.wikipedia.org/wiki/Effect_size#Cohen's_d
 #   https://www.intro2r.info/unit3/swirl/Testing_Ratios
+#   https://data-flair.training/blogs/chi-square-test-in-r/
 
 # As usual we will load the required packages:
 pacman::p_load(tidyverse, effectsize, pwr, BiodiversityR, ggsci, ggrepel, ggforce, ggpubr)
