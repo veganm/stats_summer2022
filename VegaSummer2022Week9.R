@@ -45,7 +45,7 @@ TT<-t.test(values~group, data=my_data, var.equal=TRUE)
 TT
 effectsize(TT)
 
-# Note that "d", the effect size, is Cohen's D,
+# Note that "d", the effect size here, is Cohen's D,
 # calculated as |mu1-mu2|/s, where s is the pooled standard deviation.
 # Cohen suggests that d values of 0.2, 0.5, and 0.8 represent small, medium, and large effect sizes respectively. 
 
@@ -63,7 +63,7 @@ pwr.t.test(d=0.8, n=25, sig.level = 0.05, alternative="two.sided")
 # The pwr package contains some other built-in power analysis functions,
 # but you will note there is nothing for the Mann-Whitney U test (nonparametric).
 # This is because parametric power analysis assumes the distribution of the data (normal, for a t-test).
-# For non-parametric tests, power has to be estimated.
+# For non-parametric tests, power has to be estimated from the preliminary data.
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -147,8 +147,10 @@ pwr.t.test(d=MWpwr2$d, n=MWpwr2$n1, sig.level = 0.05, alternative="two.sided")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #             PROPORTIONAL DATA
-# Last week, we saw some proportional data from two different sources
-# and discussed the idea that proportions are a special kind of data.
+# Last week, we discussed the idea that proportions are a special kind of data.
+# The problems with proportions are two-fold:
+# they are bounded (must be between zero and one)
+# and, if we don't have the counts they are based on, they are compositional (relative rather than absolute).
 #
 # Let's look at the squash bug data again.
 #I have some percent composition data from an experiment in which 9 bugs were successfully infected
@@ -232,6 +234,32 @@ sum(births$Number)
 # The expected number of births is therefore (on every day but Friday)
 (52/365)*350
 
-births_expected<-data.frame(Day=c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"),
-                            Number=c((350*52/365), (350*52/365), (350*52/365), (350*52/365), (350*52/365), (350*53/365), (350*52/365)))
-births_expected
+
+births$p<-c((52/365), (52/365), (52/365), (52/365), (52/365), (53/365), (52/365))
+births<-births %>%
+  mutate(Expected=350*p)
+births
+
+# The chi-squared statistic measures the discrepancy between observation and expectation.
+# We can calculate the statistic for ourselves:
+# (Note that the calculation uses the absolute frequencies (counts) and not the relative frequencies-
+# using proportions will give the wrong answer.)
+births<-births %>% 
+  mutate(chisq_addend = (Number-Expected)^2/Expected)
+sum(births$chisq_addend)
+CT<-chisq.test(births$Number, p=births$p)
+CT
+
+# As usual, this test requires assuming that we have a random sample from a population
+# with all individuals independent and identically distributed.
+# The chi-squared test can be used when:
+# - None of the categories have an expected frequency <1
+# - Not more than 20% of the categories have expected frequency 5.
+# If these requirements are not met, it may be possible to combine groups IF they can be reasonably combine
+# (this will take away some degrees of freedom accordingly)
+# or find an alternate test.
+
+# Since this is a parametric test, there is a power analysis for it:
+?pwr.chisq.test
+effectsize(CT)
+pwr.chisq.test(w=0.08, df=6, N=350)
