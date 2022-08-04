@@ -212,6 +212,11 @@ p4<-gghistogram(data_binom, fill="blue", bins=50, xlim=c(0,1), main="100 trials"
 shapiro.test(data_binom)
 plot_grid(p1, p2, p3, p4)
 
+# Essentially, if the data aren't too badly censored, 
+# you probably won't break a test designed for count-based numeric data.
+# If there are zero/one values at any appreciable frequency,
+# standard parametric tests won't apply, and Mann-Whitney will lose its mind over too many ties.
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # What about distributions of proportional data over some variable or gradient?
 # In a PROPORTIONAL MODEL, the frequency of occurrence of events is proportional to the number of opportunities.
