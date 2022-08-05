@@ -91,7 +91,7 @@ pwr.MW.test.boot<-function(my_data_1, my_data_2, sig=0.05, reps=1000){
   
 
   # Loop
-  for (i in seq_along(reps)){
+  for (i in seq_len(reps)){
 
     # Generate new data sets by resampling
     new_data_1<-sample(my_data_1,capp1,replace=TRUE)
@@ -116,13 +116,13 @@ pwr.MW.test.boot<-function(my_data_1, my_data_2, sig=0.05, reps=1000){
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Let's pull apart the existing data frame
-#my_data_1<-my_data %>%
- # as_tibble() %>%
-  #filter(group == "A") %>%
- # select(values) %>%
- # t() %>%
- # as.numeric()
-#my_data_1
+my_data_1<-my_data %>%
+  as_tibble() %>%
+  filter(group == "A") %>%
+  select(values) %>%
+  t() %>%
+  as.numeric()
+my_data_1
 #my_data_2<-my_data %>%
 #  filter(group == "B") %>%
 #  select(values) %>%
