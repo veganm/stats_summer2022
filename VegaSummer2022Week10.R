@@ -77,7 +77,7 @@ x2
 pnorm(x1, mean=shared_mean, sd=shared_sd)
 pnorm(x2, mean=shared_mean, sd=shared_sd, lower.tail = FALSE)
 
-# What will this code give us?
+# What will this code give us?  
 pnorm(shared_mean-shared_sd, mean=shared_mean, sd=shared_sd)
 pnorm(shared_mean+shared_sd, mean=shared_mean, sd=shared_sd)
 pnorm(shared_mean+0.5*shared_sd, mean=shared_mean, sd=shared_sd) - pnorm(shared_mean-0.5*shared_sd, mean=shared_mean, sd=shared_sd)
