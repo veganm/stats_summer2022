@@ -216,4 +216,43 @@ dist_means_20_f %>%
 #
 # Last week, we started talking about binomials
 # as part of our discussion on proportional data.
+# The binomial test works the same way. Let's see it.
+# First we will plot out the pdf and cdf as we did for the normal:
 
+# then generate & draw simulated data from the normal distribution using 
+?stat_function()
+
+pBi_10_02<-
+  ggplot(data.frame(x = c(0, 10)), aes(x = x)) +
+  stat_function(fun = dbinom, args=list(size=10, prob=0.2))+
+  theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16)) + 
+  labs(title="Binomial pdf, n=10, p=0.2")
+pBi_10_02
+
+# We can also plot the cumulative density function (cdf):
+pBi_10_02_C<-
+  ggplot(data.frame(x = c(0, 10)), aes(x = x)) +
+  stat_function(fun = pbinom, args=list(size=10, prob=0.2))+
+  theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16)) + 
+  labs(title="Binomial cdf, n=10, p=0.2")
+pBi_10_02_C
+
+plot_grid(pBi_10_02, pBi_10_02_C, nrow = 2)
+
+# How can we determine if the coin is rigged (probability of a success is < 0.5)?
+# We have only two outcomes; for one trial (here, with n=10 "flips"), this is a BINOMIAL TEST.
+?binom.test
+temp<-binom.test(x=2, n=10, p=0.5, alternative = "less")
+temp
+
+# We can see this corresponds to the appropriate place in the pdf:
+temp$p.value
+qbinom(temp$p.value, 10, 0.5)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#             THE STUDENT'S T DISTRIBUTION
+# 
