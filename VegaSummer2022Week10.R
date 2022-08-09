@@ -33,12 +33,32 @@ pNormal<-
   theme_classic()+
   theme(text=element_text(size=16), 
         plot.title=element_text(hjust=0.5, size=16)) + 
-  labs(title="Normal")
+  labs(title="Normal pdf")
 pNormal
 
-# The function pnorm() gives the distribution function for a normal.
+# We can also plot the cumulative density function (cdf):
+pNormalC<-
+  ggplot(data.frame(x = c(-4, 4)*shared_sd+shared_mean), aes(x = x)) +
+  stat_function(fun = pnorm, args=list(mean=shared_mean, sd=shared_sd))+
+  theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16)) + 
+  labs(title="Normal cdf")
+pNormalC
+plot_grid(pNormal, pNormalC, nrow = 2)
+
+# While the function dnorm() gives the density of the probability distribution function (pdf) at a given value of x,
+# the function pnorm() gives the cumulative probability density function (cdf),
+# and qnorm() gives the quantile function.
 # Let's see what this means. 
-# Note that lower.tail is a logical; 
+
+dnorm(5, mean=shared_mean, sd=shared_sd) # Look at the pdf plot. Does this make sense?
+dnorm(0, mean=shared_mean, sd=shared_sd)
+dnorm(2.5, mean=shared_mean, sd=shared_sd)
+dnorm(7.5, mean=shared_mean, sd=shared_sd)
+dnorm(10, mean=shared_mean, sd=shared_sd)
+
+# Note that lower.tail is a logical in pnorm() and qnorm(); 
 # if TRUE (default), probabilities are P[X ≤ x] otherwise, P[X > x].
 pnorm(5, mean=shared_mean, sd=shared_sd)
 pnorm(5, mean=shared_mean, sd=shared_sd, lower.tail = FALSE)
@@ -68,4 +88,6 @@ pNormal +
 
 # We've glossed over something interesting.
 # We rescaled the interval in a very particular way using the shared mean and SD.
-# This is because the normal distribution 
+# This is because the normal distribution has the particular property
+# that if X ~ N(mu, s^2), then
+# X - mu ~ N(0, s^2); and (X-mu)/s ~ N(0,1).
