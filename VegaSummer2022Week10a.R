@@ -5,7 +5,7 @@
 # so that we can discuss ANOVA and other partitions of variance.
 # Background information is from:
 #   https://www.khanacademy.org/math/statistics-probability/modeling-distributions-of-data#z-scores
-#   https://www.youtube.com/watch?v=5ABpqVSx33I
+#   https://www.khanacademy.org/math/statistics-probability/significance-tests-one-sample#more-significance-testing-videos
 
 
 # As usual we will load the required packages:
