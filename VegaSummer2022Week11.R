@@ -96,7 +96,7 @@ qt(0.05, df=10, lower.tail = FALSE)
 #         AND CHI-SQUARED HYPOTHESIS TESTING
 #
 # For your homework, you were asked to demonstrate empirically that the sum
-# of n N(0,1)^2 random variables is a chi-squared with n degrees of freedom.
+# of n N(0,1)^2 random variables is a chi-squared with n-1 degrees of freedom.
 
 # let's start by generating values from a normal N(0,1).
 ?rnorm
