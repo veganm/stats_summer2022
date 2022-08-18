@@ -245,8 +245,14 @@ sum(births$chisq_addend)
 CT<-chisq.test(births$Number, p=births$p)
 CT
 
+# But why is sum((o-e)^2/e) distributed as chi-squared?
+# Let's go to the board and find out.
+
 # As usual, this test requires assuming that we have a random sample from a population
 # with all individuals independent and identically distributed.
+# The data themselves don't have to be normal!
+# But the residuals do.
+#
 # The chi-squared test can be used when:
 # - None of the categories have an expected frequency <1
 # - Not more than 20% of the categories have expected frequency 5.
