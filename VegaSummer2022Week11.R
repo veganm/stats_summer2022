@@ -127,7 +127,7 @@ x1[1]
 x1[1]*x1[1]
 
 # This should be the same as a chi-squared distribution with df=1
-ggplot(data.frame(x = c(0, 4)), aes(x = x)) +
+ggplot(data.frame(x = c(0, 10)), aes(x = x)) +
   stat_function(fun = dchisq, args=list(df=1), aes(colour="1"))+
   stat_function(fun = dchisq, args=list(df=2), aes(colour="2"))+
   stat_function(fun = dchisq, args=list(df=5), aes(colour="5"))+
@@ -141,7 +141,7 @@ ggplot(data.frame(x = c(0, 4)), aes(x = x)) +
 # Let's plot.
 chi1<-rchisq(1000, df=1)
 mychi1<-tibble(data=c(c1, chi1),
-               distr=c(rep("N", 1000), rep("C1", 1000)),
+               distr=c(rep("N", 1000), rep("Chi", 1000)),
                df=rep(1, 2000))
 glimpse(mychi1)
 
@@ -244,6 +244,19 @@ births<-births %>%
 sum(births$chisq_addend)
 CT<-chisq.test(births$Number, p=births$p)
 CT
+
+# Sanity check
+qchisq(0.01982, df=6, lower.tail = FALSE)
+?pchisq
+
+ggplot(data.frame(x = c(0, 30)), aes(x = x)) +
+  stat_function(fun = dchisq, args=list(df=6))+
+  geom_vline(xintercept=15.0567, color="red")+
+  theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16)) + 
+  scale_color_manual("df", values = c("blue", "darkgreen", "red", "purple")) +
+  labs(title="Chisq(df=6) pdf")
 
 # But why is sum((o-e)^2/e) distributed as chi-squared?
 # Let's go to the board and find out.
