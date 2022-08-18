@@ -255,7 +255,7 @@ CT
 #
 # The chi-squared test can be used when:
 # - None of the categories have an expected frequency <1
-# - Not more than 20% of the categories have expected frequency 5.
+# - Not more than 20% of the categories have expected frequency <5.
 # If these requirements are not met, it may be possible to combine groups 
 #        IF they can be reasonably combined
 #       (this will take away some degrees of freedom accordingly)
