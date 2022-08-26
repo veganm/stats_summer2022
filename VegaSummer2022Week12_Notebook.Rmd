@@ -509,8 +509,8 @@ According to the LSE point estimator formulae we derived on the board just now, 
 $$         
 \begin{align*} 
 
-b_0 &= \bar{y} - b_1* \bar{x} \\
-b_1 &= \frac{\sum_{i=1}^{n}(x_i*y_i) - n*\bar{x}*\bar{y}}{\sum_{i=1}^{n}(x_i^2) - n*\bar{x}^2}
+b_0 &= \bar{y} - b_1 \bar{x} \\
+b_1 &= \frac{\sum_{i=1}^{n}(x_iy_i) - n\bar{x}\bar{y}}{\sum_{i=1}^{n}(x_i^2) - n\bar{x}^2}
 
 \end{align*}
 $$ 
