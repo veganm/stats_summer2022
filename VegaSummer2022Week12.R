@@ -1,8 +1,5 @@
 # Vega lab meeting, summer 2022, week 12
-# This week we will discuss the mysteries of where a hypothesis test comes from,
-# what a test statistic is, and how it is turned into a p-value
-# as we unpack the normal distribution, the chi-squared, and the F test
-# so that we can discuss ANOVA and other partitions of variance.
+# This week we will continue unpacking the mysteries of the chi-squared and F distributions. We will review linear regression on the way to our discussion of ANOVA as a partition of variance.
 #
 # Background information is from:
 #   https://www.khanacademy.org/math/statistics-probability/advanced-regression-inference-transforming/inference-on-slope/v/intro-inference-slope
@@ -19,10 +16,15 @@
 #   http://www.cookbook-r.com/Graphs/Plotting_distributions_(ggplot2)/
 #   http://www.sthda.com/english/wiki/ggplot2-density-plot-quick-start-guide-r-software-and-data-visualization
 #   https://cran.r-project.org/web/packages/egg/vignettes/Ecosystem.html
+#   https://ggplot2.tidyverse.org/reference/geom_contour.html
+#   https://cran.r-project.org/web/packages/metR/vignettes/Visualization-tools.html
+#   https://bookdown.dongzhuoer.com/hadley/ggplot2-book/scale-colour.html
+#   https://r-graphics.org/recipe-colors-palette-discrete
+#   https://stackoverflow.com/questions/55975973/how-to-add-labels-in-a-contour-plot-using-ggplot2
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # As usual we will load the libraries we need:
-pacman::p_load(tidyverse, cowplot, fBasics, grid, gridExtra, datasets, nycflights13)
+pacman::p_load(tidyverse, cowplot, effectsize, fBasics, grid, gridExtra, datasets, nycflights13, metR)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #         DESIGNING A CHI-SQUARED
@@ -153,9 +155,9 @@ pwr.chisq.test(w=0.000588, df=15, N=dim(flights3)[1])
 # it's hard to have confidence in these results.
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                     THE F STATISTIC
 # 
 # The chi-squared statistic is essentially a measure of variation: collective distance from an expectation.
@@ -164,13 +166,10 @@ pwr.chisq.test(w=0.000588, df=15, N=dim(flights3)[1])
 # F = (how much variation we can explain)/(how much variation we can't)
 # So how do we get there from the chi-squared?
 
-# In your homework, you had to demonstrate that the ratio of two chi-squared r.v.'s
-# divided by their degrees of freedom was distributed as F(df1, df2).
-# We can draw directly from last week's code, when we demonstrated that
-# the sum of k squared N(0,1) r.v.'s was distributed as chisq(df=n).
+# In your homework, you had to demonstrate that the ratio of two chi-squared r.v.'s, each divided by their degrees of freedom, was distributed as F(df1, df2).
+# We can draw directly from last week's code, when we demonstrated that the sum of k squared N(0,1) r.v.'s was distributed as chisq(df=n).
 
-# Let's start by generating values from a chisq(df=5) and a chisq(df=8), why not.
-# The corresponding F distribution would be F(5,8).
+# Let's start by generating values from a chisq(df=5) and a chisq(df=8), why not. The corresponding F distribution would be F(5,8).
 ?rchisq
 ?rf
 df1<-5
@@ -295,14 +294,92 @@ pTests + geom_abline(intercept = model$coefficients[1], slope = model$coefficien
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                 LEAST SQUARES ESTIMATION
 #
-# What's happening here is that the linear model ( y = b1*x + b0) is being fitted to these data using the LEAST SQUARES CRITERION.
-# We'll go to the board to explain this.
-# It is possible to use other criteria (e.g. maximum likelihood) to produce estimators - but we won't discuss that today.
+# What's happening here is that the linear model (y = b1*x + b0) is being fitted to these data using the LEAST SQUARES CRITERION.
+# There are two basic ways to do this. The most common (and often the only choice, for more complicated problems than this one) is some sort of GRADIENT DESCENT. Let's see how this works. Recall that we are trying to minimize the sum of squared errors between the fitted and real values.
+# Let's set up ranges for each of the two parameters in the model (slope and intercept). We'll move along these ranges slowly and calculate SSE as we go.
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ATTENTION: STUPID R TRICKS
+# We can use the seq() functions to generate ranges. If we want a range of integers, we have a few options:
+range_b0 <- seq(from=40, to=100, by=1)
+range_b0 <- seq.int(from=40, to=100)
+range_b0 <- seq.int(40, 100)
+
+# For a walk on non-integer values, seq() has the necessary flexibility.
+range_b1 <- seq(from=0.5, to=7.5, by=0.1)
+
+# As always, we need storage. We'll generate one SSE for each pair {b0, b1}, so we need:
+mysize<-length(range_b0)*length(range_b1)
+lm_gradient<-tibble(b0=numeric(mysize), b1= numeric(mysize), mySSE=numeric(mysize))
+
+# Now we can loop and calculate our SSE as we go. 
+idx<-1
+for(i in seq_along(range_b0)){
+  for(j in seq_along(range_b1)){
+    yhat<-range_b0[i] + range_b1[j]*df$hours # generate the model-based values yhat
+    lm_gradient$mySSE[idx]<-sum((df$score-yhat)*(df$score-yhat))
+    lm_gradient$b0[idx]<-range_b0[i]
+    lm_gradient$b1[idx]<-range_b1[j]
+    idx<-idx+1
+  }
+}
+
+# Let's take a look at our data and draw the gradient using geom_contour(). This function works best when you have an evenly spaced grid in x and y (which we do). STUPID R TRICKS AHEAD.
+lm_gradient
+
+# The basic plot. I don't love this. We can do better.
+lm_gradient %>%
+  ggplot(aes(x=b0, y=b1, z=mySSE))+
+  geom_contour() +
+  theme_classic() +
+  geom_hline(yintercept=3.25) +
+  geom_vline(xintercept = 73.446) # Add lines that intersect at the fitted values
+
+# Setting bins creates evenly spaced contours in the range of the data.
+lm_gradient %>%
+  ggplot(aes(x=b0, y=b1, z=mySSE))+
+  geom_contour(bins=500) + 
+  theme_classic() +
+  geom_hline(yintercept=3.25) +
+  geom_vline(xintercept = 73.446)
+
+p_lm_gradient<-lm_gradient %>%
+  ggplot(aes(x=b0, y=b1, z=mySSE, colour=stat(level))) + #Using stat() to delay colour processing until after levels are generated 
+  geom_contour(binwidth=2000) + #Or we can set the width of the bins on SSE
+  theme_classic() +
+  geom_hline(yintercept=3.25) +
+  geom_vline(xintercept = 73.446)
+
+p_lm_gradient
+p_lm_gradient + scale_color_viridis_c(option = "magma") # We can change the colour palette with the usual options from ggplot2
+p_lm_gradient + scale_color_distiller(palette="GnBu")
+
+# The package metR() contains functionality to add values to the contour lines, if we want:
+p_lm_gradient + metR::geom_text_contour(aes(z = mySSE)) + theme(legend.position = "none")
+
+# We can mess with the label placement by calling different functions to label.placer (default is label_placer_flattest()).
+p_lm_gradient + metR::geom_text_contour(aes(z = mySSE), label.placer = label_placer_fraction(frac=0.5)) + theme(legend.position = "none") #Place the label at the midpoint of the contour
+p_lm_gradient + metR::geom_text_contour(aes(z = mySSE), label.placer = label_placer_n(n=2)) + theme(legend.position = "none") #Add n=2 labels per contour
+
+# For filled contour plots, we can instead use geom_contour_filled().
+p_lm_gradient_fill<-lm_gradient %>%
+  ggplot(aes(x=b0, y=b1, z=mySSE, colour=stat(level)))+
+  geom_contour_filled(bins=100) + 
+  geom_hline(yintercept=3.25) +
+  geom_vline(xintercept = 73.446) +
+  theme(legend.position = "none") 
+p_lm_gradient_fill
+p_lm_gradient_fill + scale_fill_viridis_d(direction=-1)
+p_lm_gradient_fill + scale_fill_viridis_d(option="magma")
+p_lm_gradient_fill + scale_fill_viridis_d(option="magma", direction=-1)
+
+# Back to the point - we can see that all of these plots show SSE decreasing smoothly as the parameters approach the values actually estimated by lm() of {b0, b1} = {73.45, 3.25}
+# However, for simple linear regression, we can find the solution directly. We'll go to the board to explain this.
+# As an aside - It is also possible to use other criteria (e.g. maximum likelihood) to produce estimators - but we won't discuss that today.
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #           LEAST-SQUARES PARAMETER ESTIMATES
 #
-# According to the LSE point estimator formulae we derived, it should be possible to re-create the estimates for b0 and b1 as:
+# According to the LSE point estimator formulae we derived on the board just now, it should be possible to re-create the estimates for b0 and b1 as:
 #         b0 = ybar - b1* xbar
 #         b1 = [sum(xi*yi) - n*xbar*ybar]/[sum(xi^2) - n*xbar^2]
 # Recall in our data that scores are the dependent variable (y) and hours studying is the independent variable (x).
@@ -543,12 +620,12 @@ shapiro.test(lm2$residuals)
 
 # And the others:
 plot(lm3)
-d2<-density(lm2[['residuals']])
-plot(d2,main='Residual KDE Plot 3',xlab='Residual value')
+d3<-density(lm3[['residuals']])
+plot(d3,main='Residual KDE Plot 3',xlab='Residual value')
 shapiro.test(lm3$residuals)
 
 plot(lm4)
-d4<-density(lm2[['residuals']])
+d4<-density(lm4[['residuals']])
 plot(d4,main='Residual KDE Plot 4',xlab='Residual value')
 shapiro.test(lm4$residuals)
 
