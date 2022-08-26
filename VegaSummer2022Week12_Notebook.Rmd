@@ -1,6 +1,8 @@
 ---
 title: "Week 12 Notebook"
-output: html_notebook
+output:
+  pdf_document: default
+  html_notebook: default
 ---
 
 This week we will continue unpacking the mysteries of the chi-squared and F distributions. We will review linear regression on the way to our discussion of ANOVA as a partition of variance.
@@ -28,7 +30,7 @@ This week we will continue unpacking the mysteries of the chi-squared and F dist
 ************************************
 As usual we will load the libraries we need:
 ```{r}
-pacman::p_load(tidyverse, cowplot, effectsize, fBasics, grid, gridExtra, datasets, nycflights13, metR)
+pacman::p_load(tidyverse, pwr, cowplot, effectsize, fBasics, grid, gridExtra, datasets, nycflights13, metR)
 ```
 
 ***********************************
