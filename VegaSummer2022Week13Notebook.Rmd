@@ -1,8 +1,8 @@
 ---
 title: "Week 13 Notebook"
 output:
-  html_notebook: default
   pdf_document: default
+  html_notebook: default
 ---
 
 This week we will continue unpacking the mysteries of the chi-squared and F distributions. We will move our discussion of linear regression into a discussion of ANOVA as a partition of variance.
