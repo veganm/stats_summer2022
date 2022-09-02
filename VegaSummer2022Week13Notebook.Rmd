@@ -77,6 +77,27 @@ pTests<-df %>%
 pTests + geom_abline(intercept = model$coefficients[1], slope = model$coefficients[2], color = "blue")
 ```
 
+#### R TRICKS:
+If we weren't going to get into it with the analysis and just wanted to visualize the linear correlation, we could create and plot a smoothed conditional mean within the *ggplot* call using *geom_smooth()*. Here we assume we have a linear correlation between x and y, hence the use of *lm* as the method; the function can also use *glm*, *gam*, *loess*, or another function if explicitly called from its home package (e.g. *MASS::rlm*).
+```{r}
+df %>%
+  ggplot(aes(x=hours, y=score)) +
+  geom_point() +
+  geom_smooth(formula="y~x", method="lm", se=FALSE)+
+  theme_classic()
+```
+
+We can also tell this function that yes, we would like to see a confidence interval (default level is 0.95, but you can change this):
+```{r}
+df %>%
+  ggplot(aes(x=hours, y=score)) +
+  geom_point() +
+  geom_smooth(formula="y~x", method="lm", se=TRUE, level=0.9)+
+  theme_classic()
+```
+
+
+
 *********
 ###         SSE, VARIANCE, AND CHI-SQUARED
 
