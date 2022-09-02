@@ -276,9 +276,9 @@ mse
 To move forward, we need to know the expectations for MSE and MSR. Since (as we said above) MSE is an unbiased estimator of the variance of Y~i~ (recall that this is a constant), this means that $E[MSE]=E[\frac{SSE}{n-2}]=\sigma^2$. 
 It is also true (we'll skip the proof today) that $E[MSR] = E[SSR/1] = \sigma^2 + \beta^2_1 \sum(X_i -\bar{X})^2$; notably, this simplifies to $\sigma^2$ when $\beta_1 = 0$. 
 
-This suggests a comparison. If MSR and MSE are of the same order of magnitude, then we can assume $\beta_1 = 0$. If, however, MSR > MSE, then $\beta_1 \neq 0$ (e.g. there is a non-zero linear relationship between x and y). This is the basic idea underlying the ANOVA.
+This suggests a comparison. If MSR and MSE are of the same order of magnitude (which will happen when $\beta_1 = 0$, so the expected value for both mean squares is $\sigma^2$), then we will get a test statistic near 1 (the central F distribution with any degrees of freedom always has a mean of 1), and we do not reject the null hypothesis that $\beta_1 = 0$. If, however, MSR > MSE, then $\beta_1 \neq 0$ (e.g. there is a non-zero linear relationship between x and y). This is the basic idea underlying the ANOVA.
 
-The ANOVA uses a F test. We have implied that the statistic is MSR/MSE; when the ratio is large, the probability of getting that number from a F (1, n-2) distribution will be small. This implies - but it remains to be shown - that MSR/MSE is distributed as F (1, n-2) under the null hypothesis that $\beta_1 = 0$. 
+The ANOVA uses a F test. We have implied that the statistic is MSR/MSE; when the ratio is large, the probability of getting that number from a F(1, n-2) distribution will be small. This implies - but it remains to be shown - that MSR/MSE is distributed as F(1, n-2) under the null hypothesis that $\beta_1 = 0$. 
 
 For this to hold, it should be the case that when H0 is true, then $\frac{MSR}{MSE}=\frac{SSR/1}{SSE/n-2}~\sim \frac{\chi^2(1)/1}{\chi^2(n-2)/(n-2)}$. The critical value for the test will therefore be $F_{crit} = F(1-\alpha; 1, n-2)$, where if our test statistic F* > F~crit~, we will reject the null hypothesis that $\beta_1 = 0$. 
 
@@ -298,10 +298,40 @@ mychi18 %>%  # Plot out as density
         legend.title = element_blank()) + 
   facet_wrap(vars(distr))
 ```
+When we create the F statistic, under the null hypothesis, both the numerator and denominator have the same expected value; hence, the null hypothesis F statistic has an expectation of 1. If the statistic we observe is large (MSR>MSE, and therefore MSR/MSE > 1), the value for our statistic will be "surprising", and we reject the null hypothesis.
+```{r}
+# Code from last week's homework solution, demonstrating emergence of the F from the chi-squared distributions
+df1<-1
+df2<-18
+x1 <- rchisq(1000, df=df1)
+x2 <- rchisq(1000, df=df2)
+x3<- rf(1000, df1=df1, df2=df2)
 
+# Construct the ratio of chi-squared r.v.'s:
+f_1_18<-(x1/df1)/(x2/df2)
 
+# What are the means?
+mean(f_1_18)
+mean(x3)
+```
+```{r}
+# Assemble into a single object for plotting:
+myf_1_18<-tibble(data=c(f_1_18, x3),
+               distr=c(rep("Ratio", 1000), rep("F", 1000)),
+               df=rep(1, 2000))
+# And plot the ratio vs. the corresponding F:
+myf_1_18 %>%
+  ggplot(aes(x=data, colour=distr))+
+  geom_density()+
+  geom_vline(xintercept=1, colour="red")+
+  theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16),
+        legend.title = element_blank()) + 
+  labs(title="F(1,18) vs Chisq(df=1)/Chisq(df=18), n=1000")
+```
 
-(As a special note - whatever the true value of $\beta_1$, if the rest of the test assumptions hold, then SSR and SSE are independent of each other, and $\frac{SSE}{\sigma^2}$ is distributed as $\chi^2$. However, $\frac{SSR}{\sigma^2}$ will be a $\chi^2$ r.v. only when $\beta_1 = 0$. If this is not true, therefore, the test statistic that we calculate will not actually be from a F(df1, df2), and the value for this statistic may easily be "surprising" (low probability of occurring) under the assumption that it is from that distribution, allowing us to reject the null hypothesis at some reasonable $\alpha$.)
+As a special note - whatever the true value of $\beta_1$, if the rest of the test assumptions hold, then SSR and SSE are independent of each other, and $\frac{SSE}{\sigma^2}$ is distributed as $\chi^2$. However, $\frac{SSR}{\sigma^2}$ will be distributed as our familiar $\chi^2$ r.v. only when $\beta_1 = 0$. If this is not true, therefore, the test statistic that we calculate will not actually be from a F(df1, df2). This means that the value for this statistic may easily be "surprising" (low probability of occurring) under the assumption that it is from that distribution, allowing us to reject the null hypothesis at some reasonable $\alpha$. (If the rest of the test assumptions hold and if $\beta_1\neq0$, then it turns out that the test statistic still has a known distribution, called the *non-central F distribution*, but that's a bit of a mess, and we don't have to go into the details to understand what's happening here.)
 
 For the current data, then:
 
@@ -514,15 +544,21 @@ iris_data <- as_tibble(iris)
 glimpse(iris_data)
 ```
 We will conduct MANOVA using sepal length and petal length as observations. First, as usual, we will plot out to see what we are dealing with.
-```{r}
-iris_data %>%
+
+First, some code that doesn't work. The notebook won't compile if this is executable, so I will leave it here:
+
+> iris_data %>%
   select(Sepal.Length, Petal.Length, Species) %>%
   pivot_longer(!Species, names_to="feature", values_to = "length") %>%
   ggplot(aes(x=Species, y=length, color = feature)) +
   geom_jitter(width=0.1)+
   theme_classic()
-```
+  
+And the output, if you try this, is:
 
+> Error in select(., Sepal.Length, Petal.Length, Species) : 
+  unused arguments (Sepal.Length, Petal.Length, Species)
+  
 It turns out that some functions in *dplyr* don't like it when names have dots in them. We could rename the columns, or we can go back to basics and subset by number instead of name:
 ```{r}
 iris_data[,-c(2,4)] %>%
@@ -557,7 +593,7 @@ summary.aov(res.man)
 Before we make any conclusions, we want to know that the assumptions are OK. MANOVA assumes multivariate normality, which can be assessed using *mshapiro.test()* from *mvnormtest*:
 
 ```{r}
-mshapiro.test(t(my_data[,c(1,3)]))
+mshapiro.test(t(iris_data[,c(1,3)]))
 ```
 While *plot()* isn't implemented for MANOVA yet, we can pull the residuals and qqplot them ourselves:
 ```{r}
