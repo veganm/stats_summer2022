@@ -282,6 +282,25 @@ The ANOVA uses a F test. We have implied that the statistic is MSR/MSE; when the
 
 For this to hold, it should be the case that when H0 is true, then $\frac{MSR}{MSE}=\frac{SSR/1}{SSE/n-2}~\sim \frac{\chi^2(1)/1}{\chi^2(n-2)/(n-2)}$. The critical value for the test will therefore be $F_{crit} = F(1-\alpha; 1, n-2)$, where if our test statistic F* > F~crit~, we will reject the null hypothesis that $\beta_1 = 0$. 
 
+Let's visualize this. Recall that the mean of a $\chi^2_r$ distribution is *r*, the degrees of freedom. If X is distributed as $\chi^2_r$, then $\frac{X}{r}~\sim\chi^2_1$:
+```{r}
+# Simulate values from a chi-squared
+chi18<-rchisq(1000, df=18)
+chi18_r<-chi18/18
+mychi18<-tibble(data=c(chi18, chi18_r),
+               distr=c(rep("Chi18", 1000), rep("Chi18_18", 1000)))
+mychi18 %>%  # Plot out as density
+  ggplot(aes(x=data, colour=distr)) +
+  geom_density()+
+  theme_classic()+
+  theme(text=element_text(size=16), 
+        plot.title=element_text(hjust=0.5, size=16),
+        legend.title = element_blank()) + 
+  facet_wrap(vars(distr))
+```
+
+
+
 (As a special note - whatever the true value of $\beta_1$, if the rest of the test assumptions hold, then SSR and SSE are independent of each other, and $\frac{SSE}{\sigma^2}$ is distributed as $\chi^2$. However, $\frac{SSR}{\sigma^2}$ will be a $\chi^2$ r.v. only when $\beta_1 = 0$. If this is not true, therefore, the test statistic that we calculate will not actually be from a F(df1, df2), and the value for this statistic may easily be "surprising" (low probability of occurring) under the assumption that it is from that distribution, allowing us to reject the null hypothesis at some reasonable $\alpha$.)
 
 For the current data, then:
