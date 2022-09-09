@@ -1,8 +1,10 @@
 ---
 title: "Week 13 Notebook"
 output:
-  pdf_document: default
+  html_document:
+    df_print: paged
   html_notebook: default
+  pdf_document: default
 ---
 
 This week we will continue unpacking the mysteries of the chi-squared and F distributions. We will move our discussion of linear regression into a discussion of ANOVA as a partition of variance.
@@ -28,7 +30,8 @@ This week we will continue unpacking the mysteries of the chi-squared and F dist
 **********************
 ```{r}
 # As usual we will load the libraries we need:
-pacman::p_load(tidyverse, ggpubr, cowplot, grid, gridExtra, datasets, multcomp, car, mvnormtest)
+pacman::p_load(tidyverse, ggpubr, cowplot, grid, 
+               gridExtra, datasets, multcomp, car, mvnormtest)
 
 ```
 
@@ -74,7 +77,8 @@ pTests<-df %>%
   ggplot(aes(x=hours, y=score)) +
   geom_point() +
   theme_classic()
-pTests + geom_abline(intercept = model$coefficients[1], slope = model$coefficients[2], color = "blue")
+pTests + geom_abline(intercept = model$coefficients[1], 
+                     slope = model$coefficients[2], color = "blue")
 ```
 
 
@@ -140,7 +144,7 @@ sum(model$residuals * model$fitted.values)
 sum(fitted(model) - mean(df$score))
 ```
 
-7. The regression line always goes through the point $(\bar{x}, \bar{y}):
+7. The regression line always goes through the point $(\bar{x}, \bar{y})$:
 ```{r}
 pTests<-df %>%
   ggplot(aes(x=hours, y=score)) +
@@ -345,7 +349,9 @@ mychi18 %>%  # Plot out as density
 ```
 When we create the F statistic, under the null hypothesis, both the numerator and denominator have the same expected value of $\sigma^2$. Hence, the null hypothesis F statistic has an expectation of 1. If the statistic we observe is large (MSR>MSE, and therefore MSR/MSE > 1), the value for our statistic will be "surprising", and we reject the null hypothesis.
 ```{r}
-# Code from last week's homework solution, demonstrating emergence of the F from the chi-squared distributions
+# Code from last week's homework solution, 
+# demonstrating emergence of the F 
+# from the chi-squared distributions
 df1<-1
 df2<-18
 x1 <- rchisq(1000, df=df1)
@@ -625,7 +631,7 @@ temp %>%
   theme_classic()+
   facet_wrap(vars(feature))
 ```
-Well, the variances DEFINITELy aren't equal, but we're going to proceed anyway and see what happens. Let's carry out the MANOVA:
+Well, the variances DEFINITELY aren't equal, but we're going to proceed anyway and see what happens. Let's carry out the MANOVA:
 ```{r}
 # MANOVA test
 res.man <- manova(cbind(Sepal.Length, Petal.Length) ~ Species, data = iris)
