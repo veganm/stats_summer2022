@@ -1,0 +1,160 @@
+---
+title: "Your Homework"
+output: pdf_document
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an PDF file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered PDF copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+*******************
+### Your Homework
+Complete the problems below. When you are finished, output the results in your notebook as a PDF. 
+
+* Please read/watch:
+  + https://www.khanacademy.org/math/statistics-probability/analysis-of-variance-anova-library
+  + https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/variance-standard-deviation-sample/v/sample-variance
+  + https://www.khanacademy.org/math/statistics-probability/summarizing-quantitative-data/variance-standard-deviation-sample/v/sample-standard-deviation-and-bias
+  + https://www.youtube.com/watch?v=KkaU2ur3Ymw
+  + https://www.youtube.com/watch?v=F2mfEldxsPI
+  + https://towardsdatascience.com/why-is-the-sample-variance-distributed-with-n-1-degrees-of-freedom-c9edcdada28b
+
+
+*****************
+### Problem 1
+Fit a line of the form y = b0 + b1*x to the data set df generated below and show the results, including a plot of the fitted line against the data. Using code from week 12, independently calculate the parameters b0 and b1 from the data, and generate your own value for the R-squared associated with your fitted line.
+
+```{r}
+pacman::p_load(tidyverse, cowplot, grid, gridExtra, datasets)
+```
+
+
+```{r}
+my_sd<-runif(1, min=7, max=15)
+range=1:20
+x<-sample(range, size=50, replace=TRUE)
+y <- 12.9 + 4.03 * x + rnorm(50, mean=0, sd=my_sd)
+
+df<-data.frame(x1=x, y1=y)
+
+pTests<-df %>%
+  ggplot(aes(x=x1, y=y1)) +
+  geom_point() +
+  theme_classic()
+pTests
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+
+
+*******************
+### Problem 2
+
+Take one of the four (x,y) pairs from Anscomb's Quartet, which as we saw last week, can be found in the *datasets* library. 
+
+Change the value for only one of the data points in *y*. Demonstrate the effects of moving a single data point on the outcome of the linear regression.
+
+
+```{r}
+data<-datasets::anscombe
+glimpse(data)
+```
+
+Recall that in the original quartet, all four sets produced linear fits with the same estimated slope, intercept, and R-squared:
+
+```{r}
+lm1 <- lm(y1 ~ x1, data = anscombe)
+lm2 <- lm(y2 ~ x2, data = anscombe)
+lm3 <- lm(y3 ~ x3, data = anscombe)
+lm4 <- lm(y4 ~ x4, data = anscombe)
+```
+
+
+```{r}
+# Plotting the original data sets and fits:
+p1 <- ggplot(anscombe) +
+  geom_point(aes(x1, y1), color = "darkorange", size = 1.5) +
+  scale_x_continuous(breaks = seq(0,20,2)) +
+  scale_y_continuous(breaks = seq(0,12,2)) +
+  expand_limits(x = 0, y = 0) +
+  labs(x = "x1", y = "y1",
+       title = "Dataset 1" ) +
+  theme_bw()
+p2 <- ggplot(anscombe) +
+  geom_point(aes(x2, y2), color = "darkorange", size = 1.5) +
+  scale_x_continuous(breaks = seq(0,20,2)) +
+  scale_y_continuous(breaks = seq(0,12,2)) +
+  expand_limits(x = 0, y = 0) +
+  labs(x = "x2", y = "y2",
+       title = "Dataset 2" ) +
+  theme_bw()
+p3 <- ggplot(anscombe) +
+  geom_point(aes(x3, y3), color = "darkorange", size = 1.5) +
+  scale_x_continuous(breaks = seq(0,20,2)) +
+  scale_y_continuous(breaks = seq(0,12,2)) +
+  expand_limits(x = 0, y = 0) +
+  labs(x = "x3", y = "y3",
+       title = "Dataset 3" ) +
+  theme_bw()
+p4 <- ggplot(anscombe) +
+  geom_point(aes(x4, y4), color = "darkorange", size = 1.5) +
+  scale_x_continuous(breaks = seq(0,20,2)) +
+  scale_y_continuous(breaks = seq(0,12,2)) +
+  expand_limits(x = 0, y = 0) +
+  labs(x = "x4", y = "y4",
+       title = "Dataset 4" ) +
+  theme_bw()
+
+p1_fitted <- p1 + geom_abline(intercept = 3.0001, slope = 0.5001, color = "blue")
+p2_fitted <- p2 + geom_abline(intercept = 3.001, slope = 0.500, color = "blue")
+p3_fitted <- p3 + geom_abline(intercept = 3.0025, slope = 0.4997, color = "blue")
+p4_fitted <- p4 + geom_abline(intercept = 3.0017, slope = 0.499, color = "blue")
+grid.arrange(grobs = list(p1_fitted, p2_fitted,
+                          p3_fitted, p4_fitted), 
+             ncol = 2, 
+             top = "Anscombe's Quartet (original)")
+```
+
+```{r}
+# And diagnostics for the originals (here, for set 1).
+# This is going to pop up a bunch of diagnostic plots in a row.
+plot(lm1)
+```
+
+```{r}
+# Diagnostics; density plot of residuals
+d<-density(lm1[['residuals']])
+plot(d,main='Residual KDE Plot 1',xlab='Residual value')
+```
+
+
+
+*******************
+### Problem 3
+
+What is a "degree of freedom"? Explain the concept and demonstrate how one degree of freedom is lost in calculating the mean of a sample.  
+
+```{r}
+
+```
+
+
